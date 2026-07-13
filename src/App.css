@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+    /* --- Nocturne 暗黑深渊主题 (Default) --- */
+    --color-nocturne-bg0: #0b0612;      /* 基础午夜黑 */
+    --color-nocturne-bg1: #15091f;      /* 渐变终点紫 */
+    --color-nocturne-ink: #f6e9f1;      /* 月光白主要文字 */
+    --color-nocturne-muted: #b08fae;    /* 阴影灰次要文字 */
+    --color-nocturne-primary: #e83a78;  /* 核心赞助人洋红 */
+    --color-nocturne-violet: #7b3fa0;   /* 罗曼蒂克紫 */
+    --color-nocturne-blue: #16266a;     /* 深邃夜空蓝 */
+    --color-nocturne-gold: #f0b14e;     /* 煤气灯暗金（唯一暖色勾边） */
+    --color-nocturne-panel: rgba(26, 14, 36, 0.52); /* 磨砂玻璃面板 */
+    --color-nocturne-line: rgba(246, 233, 241, 0.14); /* 极细边框线 */
+
+    /* --- Magnolia Dawn 破晓主题 --- */
+    --color-magnolia-bg0: #fbeee9;      /* 温暖羊皮纸 daylight */
+    --color-magnolia-bg1: #f5e0e4;      /* 晨曦微红渐变 */
+    --color-magnolia-ink: #2a1320;      /* 深茄子黑体字 */
+    --color-magnolia-muted: #9a6b86;    /* 次要暮色紫 */
+    --color-magnolia-primary: #d4396f;  /* 九重葛洋红 */
+    --color-magnolia-violet: #7b3fa0;   /* 李子色点缀 */
+    --color-magnolia-blue: #2e3a73;     /* 靛青色点缀 */
+    --color-magnolia-gold: #c9842f;     /* 古董鎏金 */
+    --color-magnolia-panel: rgba(255, 251, 248, 0.66);
+    --color-magnolia-line: rgba(42, 19, 32, 0.13);
+
+    --font-serif: "Fraunces", "Georgia", serif;
+}
+
+body {
+    background-color: var(--color-nocturne-bg0);
+    color: var(--color-nocturne-ink);
+    margin: 0;
+}

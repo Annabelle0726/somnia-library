@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+#root {
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+html, body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 58, 120, 0.8) #120e17;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+
+/* ---------------------------------- */
+/* 🌙 Reverie Fantasy Scrollbar       */
+/* ---------------------------------- */
+
+/* 1. 整体滚动条的宽度 */
+::-webkit-scrollbar {
+  width: 10px; /* 稍微做细一点，显得更精致 */
+  height: 10px; /* 横向滚动条的高度 */
+}
+
+/* 2. 滚动条轨道 (背景) */
+::-webkit-scrollbar-track {
+  background: #120e17; /* 极深的暗紫色/黑色轨道 (对应你的 nocturne-bg) */
+  border-left: 1px solid rgba(212, 175, 55, 0.15); /* 左侧加一条极细的暗金分割线 */
+}
+
+/* 3. 滚动条滑块 (主角) */
+::-webkit-scrollbar-thumb {
+  /* 金色 (nocturne-gold) 到 粉色 (nocturne-primary) 的渐变魔法色 */
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.7) 0%, rgba(232, 58, 120, 0.8) 100%);
+
+  border-radius: 10px; /* 胶囊形状 */
+
+  /* 用与轨道相同的背景色做边框，制造一种“悬浮/内嵌”的镂空错觉 */
+  border: 2px solid #120e17;
+}
+
+/* 4. 鼠标悬浮在滑块上时的交互反馈 */
+::-webkit-scrollbar-thumb:hover {
+  /* 颜色提亮，假装它发光了 */
+  background: linear-gradient(180deg, rgba(255, 215, 0, 0.9) 0%, rgba(255, 90, 150, 1) 100%);
+}
+
+/* 兼容性补充：针对 Firefox 的基础降级支持 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 58, 120, 0.8) #120e17;
+}

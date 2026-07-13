@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* 1. 告诉 Tailwind 你的自定义颜色，使用 @theme 指令 */
+@theme {
+    --color-theme-bg0: var(--app-bg0);
+    --color-theme-panel: var(--app-panel);
+    --color-theme-primary: var(--app-primary);
+    --color-theme-violet: var(--app-violet);
+    --color-theme-gold: var(--app-gold);
+    --color-theme-ink: var(--app-ink);
+}
+
+/* 2. 在 base 层定义不同主题下的具体 Hex 颜色 */
+@layer base {
+    /* 默认 & Nocturne (午夜) */
+    :root, [data-theme="nocturne"] {
+        --app-bg0: #0b0612;
+        --app-panel: #16266a;
+        --app-primary: #e83a78;
+        --app-violet: #7b3fa0;
+        --app-gold: #f0b14e;
+        --app-ink: #ffffff;
+    }
+
+    /* Magnolia Dawn (白昼) */
+    [data-theme="magnolia"] {
+        --app-bg0: #faf9f6;
+        --app-panel: #ebe6e1;
+        --app-primary: #c82d5a;
+        --app-violet: #64328c;
+        --app-gold: #c88228;
+        --app-ink: #0b0612; /* 白昼模式下文字变深色 */
+    }
+
+    /* Gloaming (黄昏) - 根据你截图里 "dusk-rose fading up into bruised indigo" 的描述抓取的色值 */
+    [data-theme="gloaming"] {
+        --app-bg0: #1a1b2e;
+        --app-panel: #2a2b42;
+        --app-primary: #b85c7a;
+        --app-violet: #5c4d8c;
+        --app-gold: #d4a373;
+        --app-ink: #e2e2ee;
+    }
+}
