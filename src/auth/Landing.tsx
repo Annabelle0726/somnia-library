@@ -1,53 +1,56 @@
 // src/auth/Landing.tsx
-import { Link } from 'react-router-dom';
+import { LandingHeader } from '../components/landings/LandingHeader.tsx';
+import { LandingActionButtons } from '../components/landings/LandingActionButtons';
 
 export default function Landing() {
     return (
-        <div className="min-h-screen flex flex-col bg-theme-bg0
-        font-serif text-theme-ink relative overflow-hidden">
+        <div className="min-h-screen flex flex-col bg-theme-bg0 font-serif text-theme-ink relative overflow-hidden selection:bg-theme-primary/20">
 
-            {/* 🌟 沉浸式全屏背景 texture / gradient
-                这里可以使用你在 Layout 中用的 <Background /> 组件，或者一个专门的沉浸式纹理
-            */}
-            {/*<div className="absolute inset-0 z-0 opacity-10">*/}
-            {/*    <img src="/path/to/your/landing-background-texture.jpg"*/}
-            {/*         alt="" className="w-full h-full object-cover" />*/}
-            {/*</div>*/}
+            {/* 🌟 沉浸式环境背景光晕 */}
+            <div className="absolute inset-0 pointer-events-none z-0">
+                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-theme-primary/5 rounded-full blur-[140px] opacity-70"></div>
+            </div>
 
-            <main className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 z-10 text-center">
+            {/* 🌟 1. 顶部动态装饰栏组件 */}
+            <LandingHeader />
 
-                {/* 🌟 大、优美的 serif 字体口号 */}
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 leading-tight">
-                    A reading life, beautifully kept.
-                </h1>
+            {/* 🌟 2. 具有开阔呼吸感的主体内容 */}
+            <main className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 z-10 text-center max-w-4xl mx-auto my-auto">
 
-                {/* 🌟 金色 / 主题色的品牌标识 */}
-                <div className="text-2xl font-bold tracking-widest text-theme-primary mb-8 drop-shadow-sm">
-                    SOMNIA LIBRARY
+                {/* 顶置文学小字 */}
+                <div className="text-[10px] font-mono tracking-[0.4em] uppercase text-theme-primary/50 mb-8 drop-shadow-[0_0_8px_rgba(var(--theme-primary-rgb),0.15)] select-none">
+                    Welcome to the Sanctuary
                 </div>
 
-                {/* 🌟 简洁的功能介绍 */}
-                <p className="text-xl italic text-theme-ink/80 max-w-2xl mb-12 leading-relaxed">
-                    Organize your collection, track your journey, and dress your whole library in a look that fits what you love.
+                {/* 大标题：优雅衬线字 */}
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tight mb-4 leading-[1.2] text-theme-ink max-w-3xl">
+                    A reading life, <span className="italic font-normal font-serif text-theme-primary/90">beautifully kept.</span>
+                </h1>
+
+                {/* 古典印刷风格的分割线 */}
+                <div className="flex items-center justify-center gap-5 my-10 w-full max-w-xs opacity-40 select-none">
+                    <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-theme-line/40 to-theme-primary/20"></div>
+                    <span className="text-theme-primary/70 text-xs tracking-widest transform rotate-45 scale-75">♦</span>
+                    <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent via-theme-line/40 to-theme-primary/20"></div>
+                </div>
+
+                {/* 诗意主叙述（字色调弱，突出中轴线的空灵感） */}
+                <p className="text-base md:text-lg italic text-theme-ink/50 max-w-2xl mb-12 leading-relaxed px-4 font-normal">
+                    "Somnia organizes everything you’ve read, everything you mean to, and dresses your whole collection in a look that fits what you love."
                 </p>
 
-                {/* 🌟 突出的“进入图书馆”/“开始使用”按钮
-                    这个按钮链接到 /auth (登录页)
-                */}
-                <Link
-                    to="/auth"
-                    className="p-5 px-10 text-xl bg-amber-600/90 hover:bg-amber-500 text-white font-sans font-medium rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(217,119,6,0.3)] hover:shadow-[0_0_25px_rgba(217,119,6,0.5)] transform hover:-translate-y-0.5"
-                >
-                    Enter the Library
-                </Link>
+                {/* 🌟 3. 双功能按钮组件 */}
+                <LandingActionButtons />
             </main>
 
-            {/* 可选：一个极简的页脚 */}
-            <footer className="w-full text-center p-6 text-sm text-theme-ink/60 z-10">
-                © 2026 Somnia . Made for readers.
+            {/* 🌟 4. 极简页脚 */}
+            <footer className="w-full text-center p-6 text-[10px] font-mono tracking-[0.20em] text-theme-ink/30 z-10 select-none">
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-6">
+                    <span>© 2026 SOMNIA. ALL RIGHTS RESERVED.</span>
+                    <span className="hidden sm:inline opacity-30">|</span>
+                    <span className="hover:text-theme-primary/60 transition-colors duration-300 cursor-help">MADE FOR READERS.</span>
+                </div>
             </footer>
         </div>
-
-
     );
 }
