@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom';
-
 interface NavProps {
     isCollapsed: boolean;
 }
 
 export function Nav({ isCollapsed }: NavProps) {
+
     const navItems = [
         { name: 'Home', icon: '🏠' },
         { name: 'Library', icon: '📚' },
@@ -18,8 +18,8 @@ export function Nav({ isCollapsed }: NavProps) {
 
     const functionButtons = [
         {
-            name: 'Add',
-            path: '../pages/Add',
+            name: 'AddBook',
+            path: '/addBook',
             icon: '+',
             activeBorder: 'border-nocturne-primary',
             activeText: 'text-nocturne-primary',
@@ -29,7 +29,7 @@ export function Nav({ isCollapsed }: NavProps) {
         },
         {
             name: 'Theme',
-            path: '../pages/Theme',
+            path: '/theme',
             icon: '◐',
             activeBorder: 'border-nocturne-gold',
             activeText: 'text-nocturne-gold',
@@ -39,7 +39,7 @@ export function Nav({ isCollapsed }: NavProps) {
         },
         {
             name: 'Settings',
-            path: '../pages/Settings',
+            path: '/settings',
             icon: '⚙',
             activeBorder: 'border-nocturne-muted',
             activeText: 'text-nocturne-muted',
