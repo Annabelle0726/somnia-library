@@ -1,32 +1,62 @@
 import './App.css'
-import {BrowserRouter, Routes, Route} from "react-router-dom";
-import {Layout} from './components/layout/Layout'
-import Home from './pages/Home'
-import Library from './pages/Library'
-import Shelves from './pages/Shelves'
-import { ThemeProvider } from './contexts/ThemeContext'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './auth/AuthProvider';
+
+// 内部页面
+import { Layout } from './components/layout/Layout';
+import Home from './pages/Home';
+import Library from './pages/Library';
+import Shelves from './pages/Shelves';
+import Match from './pages/Match';
+import Discover from './pages/Discover';
+import {Theme} from "./pages/Theme.tsx";
+import Stats from "./pages/Stats.tsx";
+import {AddBook} from "./pages/AddBook.tsx";
+import {Settings} from "./pages/Settings.tsx";
+import { ProtectedRoute } from './components/ProtectedRoute';
+
+// 外部页面 (新建这些文件)
+import Landing from './auth/Landing';
+import AuthScreen from './auth/AuthScreen';
+import UnauthShell from './auth/UnauthShell'; // 可选，用于包裹 Landing 和 Auth 的外壳
+
+const basename = import.meta.env.MODE === 'production' ? '/somnia-library' : '';
 
 export default function App() {
     return (
         <ThemeProvider>
-            <BrowserRouter>
-            <Routes>
-                {/*
-                  ✨ 外层路由：渲染 Layout。
-                  只要路径是以 "/" 开头的，都会先渲染 Layout。
-                  Layout 里面的 <Outlet /> 就会根据后面的路径，显示对应的子组件
-                */}
-                <Route path="/" element={<Layout/>}>
+            <AuthProvider>
+                <BrowserRouter basename={basename}>
+                    <Routes>
+                        {/* 🌟 1. 公共路由：不需要侧边栏 */}
+                        <Route element={<UnauthShell />}>
+                            <Route path="/welcome" element={<Landing />} />
+                            <Route path="/auth" element={<AuthScreen />} />
+                        </Route>
 
-                    {/* index 路由：当路径刚好是 "/" 时，Outlet 里显示 Home */}
-                    <Route index element={<Home/>}/>
+                        {/* 🌟 2. 私有路由：受 ProtectedRoute 保护，且使用带侧边栏的 Layout */}
+                        <Route path="/" element={
+                            <ProtectedRoute>
+                                <Layout />
+                            </ProtectedRoute>
+                        }>
+                            <Route index element={<Home />} />
+                            <Route path="library" element={<Library />} />
+                            <Route path="stats" element={<Stats />} />
+                            <Route path="match" element={<Match />} />
+                            <Route path="discover" element={<Discover />} />
 
-                    <Route path="library" element={<Library/>}/>
-                    <Route path="shelves" element={<Shelves/>}/>
 
+                            <Route path="settings" element={<Settings />} />
 
-                </Route>
-            </Routes>
-        </BrowserRouter></ThemeProvider>
-    )
+                            <Route path="shelves" element={<Shelves />} />
+                            <Route path="addBook" element={<AddBook />} />
+                            <Route path="theme" element={<Theme />} />
+                        </Route>
+                    </Routes>
+                </BrowserRouter>
+            </AuthProvider>
+        </ThemeProvider>
+    );
 }
