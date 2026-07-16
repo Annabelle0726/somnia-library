@@ -1,32 +1,48 @@
-# React + TypeScript + Vite
+# Somnia Library 🌌
+> "Your shelves wait in the dark."
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+An immersive, Gothic-inspired interactive digital bookshelf designed to capture the cozy, gaslit atmosphere of a New Orleans midnight. Powered by **React, TypeScript, Vite, and Supabase**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🖋️ Attribution & License (Cite)
+This project is derived from the original [Reverie](https://github.com/Reverie-Reads/reverie) framework designed and developed by **Greg Chism**.
 
-## React Compiler
+* **Original Framework:** [Reverie reads](https://reveriereads.app/)
+* **License:** Licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](./LICENSE).
+* *Special thanks to Greg Chism for the atmospheric design system and guidance.*
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## 🔮 Aesthetics & Design System (Nocturne)
+Built strictly following the customized **Nocturne (Midnight Abyss)** palette:
+* **Background (`bg0`):** Deep Midnight Violet (`#0b0612`)
+* **Accents:** Gaslight Amber (`#f0b14e`), Patron Magenta (`#e83a78`), and Romantic Orchid (`#7b3fa0`)
+* **Vibe:** Soft atmospheric vignette shadows, breathing aurora nebulae, and high-fidelity skeuomorphic wooden shelves.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+---
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## 🛠️ Tech Stack & Architecture
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### Front-End
+* **Framework:** React 19 + TypeScript
+* **Build Tool:** Vite 6+ (optimized with lightning-fast `@tailwindcss/vite` configuration)
+* **Styling:** Tailwind CSS v4 (Modern CSS-first theme configuration)
+
+### Back-End (Vault)
+* **Database & Auth:** [Supabase](https://supabase.com)
+* **Syncing:** Real-time collection fetching and dynamic user custom books sync.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Local Development
+Clone the repository and spin up the magical environment locally:
+
+```bash
+# Install dependencies
+npm install
+
+# Light the candles (Run Dev Server)
+npm run dev
