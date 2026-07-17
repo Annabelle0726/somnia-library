@@ -1,6 +1,7 @@
 // src/auth/AuthScreen.tsx
 import { useAuth } from './AuthProvider';
 import { useNavigate } from 'react-router-dom';
+import {LandingHeader} from "../components/landings/LandingHeader.tsx";
 
 export default function AuthScreen() {
     const { login } = useAuth();
@@ -14,11 +15,10 @@ export default function AuthScreen() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-theme-bg0 font-serif text-theme-ink relative">
-            {/* 你可以复用你的 Background 组件，或者用一个沉浸式的渐变 */}
 
+<LandingHeader />
             <div className="z-10 w-full max-w-md p-8 bg-theme-bg0/80 backdrop-blur-xl border border-theme-line/30 rounded-xl shadow-2xl">
 
-                {/* 类似 Reverie 的标语 */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold mb-2 tracking-wide text-theme-primary">
                         Somnia Library
