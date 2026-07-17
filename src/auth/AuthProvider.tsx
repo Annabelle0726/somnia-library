@@ -1,30 +1,65 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from "../lib/supabase"; // 1. 去掉 .ts 后缀，防止编译报错
+import type { User } from '@supabase/supabase-js';
 
-import { createContext, useContext, useState, type ReactNode } from 'react';
-
+// 定义 Context 的类型
 interface AuthContextType {
-    isAuthenticated: boolean;
-    login: () => void;
-    logout: () => void;
+    user: User | null;
+    loading: boolean; // 2. 用 loading 代替之前混乱的 login 状态
+    logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-    // 真实项目中这里会检查 localStorage 或请求后端 token
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true); // 初始状态设为加载中
 
-    const login = () => setIsAuthenticated(true);
-    const logout = () => setIsAuthenticated(false);
+    useEffect(() => {
+        // 1. 异步获取初始的 Session 状态
+        const initializeAuth = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setUser(session?.user ?? null);
+            } catch (error) {
+                console.error("初始化获取登录状态失败:", error);
+            } finally {
+                setLoading(false); // 无论成功失败，都结束加载状态
+            }
+        };
+
+        initializeAuth();
+
+        // 2. 监听登录状态的实时变化（登入、登出、Token 过期）
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+            setLoading(false);
+        });
+
+        // 3. 在 useEffect 的返回中进行清理
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, []);
+
+    // 登出函数
+    const logout = async () => {
+        await supabase.auth.signOut();
+    };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+        // 4. 正确返回 Context Provider，并注入状态
+        <AuthContext.Provider value={{ user, loading, logout }}>
             {children}
         </AuthContext.Provider>
     );
-}
+};
 
+// 5. 顺手帮你写一个自定义 Hook，其他页面调用直接：const { user, loading } = useAuth()
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    if (!context) throw new Error("useAuth must be used within an AuthProvider");
+    if (!context) {
+        throw new Error('useAuth 必须在 AuthProvider 内部使用！');
+    }
     return context;
 };
