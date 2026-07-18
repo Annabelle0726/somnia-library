@@ -19,7 +19,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 // 外部页面 (新建这些文件)
 import Landing from './auth/Landing';
 import AuthScreen from './auth/AuthScreen';
-import UnauthShell from './auth/UnauthShell'; // 可选，用于包裹 Landing 和 Auth 的外壳
+import UnauthShell from './auth/UnauthShell';
 
 const basename = import.meta.env.MODE === 'production' ? '/somnia-library' : '';
 

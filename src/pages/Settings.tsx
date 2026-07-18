@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../auth/useAuth';
 
 export function Settings() {
     const { logout } = useAuth();
@@ -7,7 +7,7 @@ export function Settings() {
 
     const handleLogout = () => {
         logout();
-        navigate('/landing');
+        navigate('/Welcome');
     };
 
     return (

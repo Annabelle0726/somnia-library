@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from './AuthProvider';
+import { useAuth } from './useAuth';
 
 export default function UnauthShell() {
     // 1. 解构出最新的 user 和 loading 状态

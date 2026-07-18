@@ -5,7 +5,7 @@ export function LandingActionButtons() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mt-12 w-full max-w-xl mx-auto z-20">
             {/* 🔹 按钮一：Log In (古典隐形书签) */}
             <Link
-                to="/auth?mode=signin"
+                to="/auth?mode=login"
                 className="group relative w-48 h-12 flex items-center justify-center
                            border border-nocturne-line/40 bg-nocturne-bg1/60 backdrop-blur-md
                            rounded-xl text-nocturne-ink/70 font-mono text-xs tracking-[0.2em] uppercase

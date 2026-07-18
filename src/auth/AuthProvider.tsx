@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+// src/auth/AuthProvider.tsx
+import React, { createContext, useState, useEffect } from 'react';
 import { supabase } from "../lib/supabase"; // 1. 去掉 .ts 后缀，防止编译报错
 import type { User } from '@supabase/supabase-js';
 
@@ -9,7 +10,8 @@ interface AuthContextType {
     logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// 加上 export 关键字
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -53,13 +55,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             {children}
         </AuthContext.Provider>
     );
-};
-
-// 5. 顺手帮你写一个自定义 Hook，其他页面调用直接：const { user, loading } = useAuth()
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth 必须在 AuthProvider 内部使用！');
-    }
-    return context;
 };
