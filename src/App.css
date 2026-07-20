@@ -1,35 +1,106 @@
 @import "tailwindcss";
 
-@theme {
-    /* --- Nocturne 暗黑深渊主题 (Default) --- */
-    --color-nocturne-bg0: #0b0612;      /* 基础午夜黑 */
-    --color-nocturne-bg1: #15091f;      /* 渐变终点紫 */
-    --color-nocturne-ink: #f6e9f1;      /* 月光白主要文字 */
-    --color-nocturne-muted: #b08fae;    /* 阴影灰次要文字 */
-    --color-nocturne-primary: #e83a78;  /* 核心赞助人洋红 */
-    --color-nocturne-violet: #7b3fa0;   /* 罗曼蒂克紫 */
-    --color-nocturne-blue: #16266a;     /* 深邃夜空蓝 */
-    --color-nocturne-gold: #f0b14e;     /* 煤气灯暗金（唯一暖色勾边） */
-    --color-nocturne-panel: rgba(26, 14, 36, 0.52); /* 磨砂玻璃面板 */
-    --color-nocturne-line: rgba(246, 233, 241, 0.14); /* 极细边框线 */
-
-    /* --- Magnolia Dawn 破晓主题 --- */
-    --color-magnolia-bg0: #fbeee9;      /* 温暖羊皮纸 daylight */
-    --color-magnolia-bg1: #f5e0e4;      /* 晨曦微红渐变 */
-    --color-magnolia-ink: #2a1320;      /* 深茄子黑体字 */
-    --color-magnolia-muted: #9a6b86;    /* 次要暮色紫 */
-    --color-magnolia-primary: #d4396f;  /* 九重葛洋红 */
-    --color-magnolia-violet: #7b3fa0;   /* 李子色点缀 */
-    --color-magnolia-blue: #2e3a73;     /* 靛青色点缀 */
-    --color-magnolia-gold: #c9842f;     /* 古董鎏金 */
-    --color-magnolia-panel: rgba(255, 251, 248, 0.66);
-    --color-magnolia-line: rgba(42, 19, 32, 0.13);
-
-    --font-serif: "Fraunces", "Georgia", serif;
+/* ============================================================
+   全局基础重置与排版修饰
+   ============================================================ */
+#root {
+    max-width: 100%;
+    margin: 0 auto;
+    /* 使用主题变量控制边框 */
+    border-inline: 1px solid var(--line);
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
-body {
-    background-color: var(--color-nocturne-bg0);
-    color: var(--color-nocturne-ink);
+h1, h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    color: var(--ink);
     margin: 0;
+}
+
+h1 {
+    font-weight: 900; /* 配合 Fraunces 展现最强的张力 */
+    font-size: 56px;
+    letter-spacing: -1.68px;
+    margin: 32px 0;
+}
+
+@media (max-width: 1024px) {
+    h1 {
+        font-size: 36px;
+        margin: 20px 0;
+    }
+}
+
+h2 {
+    font-size: 24px;
+    line-height: 118%;
+    letter-spacing: -0.24px;
+    margin: 0 0 8px;
+}
+
+@media (max-width: 1024px) {
+    h2 { font-size: 20px; }
+}
+
+p {
+    margin: 0;
+}
+
+code, .counter {
+    font-family: var(--font-mono);
+    display: inline-flex;
+    border-radius: 4px;
+    color: var(--ink);
+}
+
+code {
+    font-size: 15px;
+    line-height: 135%;
+    padding: 4px 8px;
+    /* 使用卡片颜色作为代码背景 */
+    background: var(--card);
+    border: 1px solid var(--line);
+}
+
+/* ---------------------------------- */
+/* 🌙 Reverie Fantasy Scrollbar (Dynamic) */
+/* ---------------------------------- */
+
+/* 兼容性补充：针对 Firefox 的基础降级支持 */
+* {
+    scrollbar-width: thin;
+    /* Firefox 只能接受单色，所以用 primary 和 bg */
+    scrollbar-color: var(--primary) var(--bg);
+}
+
+/* 1. 整体滚动条的宽度 */
+::-webkit-scrollbar {
+    width: 10px; /* 稍微做细一点，显得更精致 */
+    height: 10px; /* 横向滚动条的高度 */
+}
+
+/* 2. 滚动条轨道 (背景) */
+::-webkit-scrollbar-track {
+    background: var(--bg); /* 动态读取当前主题背景 */
+    border-left: 1px solid var(--line); /* 极细的分割线 */
+}
+
+/* 3. 滚动条滑块 (主角) */
+::-webkit-scrollbar-thumb {
+    /* 动态渐变：从 Tertiary(金色/强调) 到 Primary(洋红/主色) */
+    background: linear-gradient(180deg, var(--tertiary) 0%, var(--primary) 100%);
+    border-radius: 10px; /* 胶囊形状 */
+
+    /* 用与轨道相同的背景色做边框，制造一种“悬浮/内嵌”的镂空错觉 */
+    border: 2px solid var(--bg);
+}
+
+/* 4. 鼠标悬浮在滑块上时的交互反馈 */
+::-webkit-scrollbar-thumb:hover {
+    /* 提亮，假装它发光了 */
+    filter: brightness(1.2);
 }

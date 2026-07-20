@@ -8,25 +8,27 @@ export function Layout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
-        <div className="relative bg-theme-bg0 min-h-screen flex flex-row font-serif text-theme-ink">
+        /* 1. 修改：bg-theme-bg0 -> bg-bg, text-theme-ink -> text-ink, font-serif -> font-body */
+        <div className="relative bg-bg min-h-screen flex flex-row font-body text-ink">
             <Background />
 
-            {/* 侧边栏，继续由 isCollapsed 控制 */}
+            {/* 侧边栏 */}
             <Nav isCollapsed={isCollapsed} />
 
             {/* 右侧内容区 */}
-            <div className="relative z-10 w-full flex-1 flex flex-col h-screen overflow-y-auto no-scrollbar">
+            {/* 💡 关键修改：删除了 no-scrollbar，以便展示我们刚才配置的魔法渐变滚动条 */}
+            <div className="relative z-10 w-full flex-1 flex flex-col h-screen overflow-y-auto">
 
                 {/* ✨ 极简折叠按钮，固定在左下方 */}
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-                    // 将样式拆分为“默认状态”和“悬浮状态”，使其对比更明显
+                    /* 2. 修改：更新了按钮悬浮态的色值类名 (text-ink, hover:bg-card/80, hover:border-line, hover:text-primary) */
                     className="absolute bottom-4 left-4 z-20 p-2 rounded-md transition-all duration-300 backdrop-blur-md
-        /* 🌑 默认（不活跃）状态：极低透明度，隐藏背景和边框，融入环境 */
-        opacity-30 bg-transparent border border-transparent text-theme-ink
-        /* 🌟 悬浮（活跃）状态：恢复 100% 透明度，显示磨砂背景、边框和阴影，图标变主题色 */
-        hover:opacity-100 hover:bg-theme-bg0/80 hover:border-theme-line/30 hover:text-theme-primary hover:shadow-md"
+        /* 🌑 默认（不活跃）状态 */
+        opacity-30 bg-transparent border border-transparent text-ink
+        /* 🌟 悬浮（活跃）状态 */
+        hover:opacity-100 hover:bg-card/80 hover:border-line hover:text-primary hover:shadow-md"
                 >
                     {/* 绝美的极简 SVG 侧边栏图标 */}
                     <svg

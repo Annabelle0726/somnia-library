@@ -1,153 +1,120 @@
 @import "tailwindcss";
 
+/*
+  ============================================================
+  1. 全局字体加载
+  包含你截图里那种优雅的衬线体，以及现代无衬线体
+  ============================================================
+*/
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900&family=Hanken+Grotesk:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Spectral:wght@400;500&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600&display=swap');
 
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+/*
+  ============================================================
+  2. Tailwind v4 @theme 变量映射
+  让 Tailwind 能够直接使用 className="bg-bg text-ink border-line"
+  ============================================================
+*/
+@theme {
+  --color-bg: var(--bg) !important;
+  --color-bg2: var(--bg2);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-solid: var(--primary-solid);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --font-display: var(--font-display), Georgia, serif;
+  --font-body: var(--font-body), system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
+/*
+  ============================================================
+  3. 皮肤 Token 契约层 (6 套主题)
+  ============================================================
+*/
+@layer base {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* 默认安全回退字体 */
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Hanken Grotesk', system-ui, sans-serif;
+    --font-mono: 'Space Mono', monospace;
   }
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    transition: background-color 0.6s ease, color 0.45s ease;
+    margin: 0;
+    min-height: 100svh;
   }
-}
 
-#root {
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-}
-
-html, body {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(232, 58, 120, 0.8) #120e17;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+  ::selection {
+    background: var(--primary-solid);
+    color: var(--on-primary);
   }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+
+  /* ---- 1. NOCTURNE · 暗黑深渊 (Dark) ---- */
+  :root, :root[data-skin="nocturne"][data-mode="dark"] {
+    --bg: #0b0612; --bg2: #15091f; --card: rgba(26, 14, 36, 0.52); --card-2: #21102f;
+    --ink: #f6e9f1; --muted: #b08fae; --line: rgba(246, 233, 241, 0.14);
+    --primary: #e83a78; --primary-solid: #cf2f66; --on-primary: #ffffff;
+    --secondary: #7b3fa0; --tertiary: #f0b14e; --shadow: rgba(0,0,0,0.5);
+    --font-display: 'Fraunces'; --font-body: 'Hanken Grotesk'; --font-mono: 'Space Mono';
   }
-}
-p {
-  margin: 0;
-}
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+  /* ---- 2. MAGNOLIA · 白昼木兰 (Light - 接近你截图的风格) ---- */
+  :root[data-skin="magnolia"][data-mode="light"] {
+    --bg: #faf9f6; --bg2: #f0ede9; --card: rgba(255, 255, 255, 0.6); --card-2: #e3deda;
+    --ink: #2a1a2e; --muted: #736b7a; --line: rgba(200, 45, 90, 0.15);
+    --primary: #c82d5a; --primary-solid: #a32247; --on-primary: #ffffff;
+    --secondary: #64328c; --tertiary: #c88228; --shadow: rgba(0,0,0,0.05);
+    --font-display: 'Fraunces'; --font-body: 'Inter'; --font-mono: 'Space Mono';
+  }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
+  /* ---- 3. GLOAMING · 暮色黄昏 (Dark) ---- */
+  :root[data-skin="gloaming"][data-mode="dark"] {
+    --bg: #1a1b2e; --bg2: #212236; --card: rgba(42, 43, 66, 0.6); --card-2: #31334c;
+    --ink: #e2e2ee; --muted: #8a8ca8; --line: rgba(184, 92, 122, 0.2);
+    --primary: #b85c7a; --primary-solid: #9c4b65; --on-primary: #ffffff;
+    --secondary: #5c4d8c; --tertiary: #d4a373; --shadow: rgba(0,0,0,0.4);
+    --font-display: 'Spectral'; --font-body: 'Inter'; --font-mono: 'Fira Code';
+  }
 
-/* ---------------------------------- */
-/* 🌙 Reverie Fantasy Scrollbar       */
-/* ---------------------------------- */
+  /* ---- 4. REVERIE · 哥特夜架 (Light) ---- */
+  :root[data-skin="reverie"][data-mode="light"] {
+    --bg: #fbeee9; --bg2: #f5e0e4; --card: #fffaf6; --card-2: #fdf2ee;
+    --ink: #2a1320; --muted: #86566f; --line: rgba(201, 132, 47, 0.22);
+    --primary: #c52e5f; --primary-solid: #c52e5f; --on-primary: #ffffff;
+    --secondary: #7b3fa0; --tertiary: #c9842f; --shadow: rgba(60, 20, 40, 0.12);
+    --font-display: 'Fraunces'; --font-body: 'Hanken Grotesk'; --font-mono: 'Space Mono';
+  }
 
-/* 1. 整体滚动条的宽度 */
-::-webkit-scrollbar {
-  width: 10px; /* 稍微做细一点，显得更精致 */
-  height: 10px; /* 横向滚动条的高度 */
-}
+  /* ---- 5. GRIMOIRE · 羊皮卷宗 (Dark) ---- */
+  :root[data-skin="grimoire"][data-mode="dark"] {
+    --bg: #0c0f0b; --bg2: #12160f; --card: #161b12; --card-2: #1d2417;
+    --ink: #ece7d6; --muted: #9aa384; --line: rgba(212, 175, 55, 0.18);
+    --primary: #3aa97e; --primary-solid: #2f9e74; --on-primary: #08110b;
+    --secondary: #b08828; --tertiary: #d4af37; --shadow: rgba(0,0,0,0.55);
+    --font-display: 'Cormorant Garamond'; --font-body: 'Spectral'; --font-mono: 'Space Mono';
+  }
 
-/* 2. 滚动条轨道 (背景) */
-::-webkit-scrollbar-track {
-  background: #120e17; /* 极深的暗紫色/黑色轨道 (对应你的 nocturne-bg) */
-  border-left: 1px solid rgba(212, 175, 55, 0.15); /* 左侧加一条极细的暗金分割线 */
-}
-
-/* 3. 滚动条滑块 (主角) */
-::-webkit-scrollbar-thumb {
-  /* 金色 (nocturne-gold) 到 粉色 (nocturne-primary) 的渐变魔法色 */
-  background: linear-gradient(180deg, rgba(212, 175, 55, 0.7) 0%, rgba(232, 58, 120, 0.8) 100%);
-
-  border-radius: 10px; /* 胶囊形状 */
-
-  /* 用与轨道相同的背景色做边框，制造一种“悬浮/内嵌”的镂空错觉 */
-  border: 2px solid #120e17;
-}
-
-/* 4. 鼠标悬浮在滑块上时的交互反馈 */
-::-webkit-scrollbar-thumb:hover {
-  /* 颜色提亮，假装它发光了 */
-  background: linear-gradient(180deg, rgba(255, 215, 0, 0.9) 0%, rgba(255, 90, 150, 1) 100%);
-}
-
-/* 兼容性补充：针对 Firefox 的基础降级支持 */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(232, 58, 120, 0.8) #120e17;
+  /* ---- 6. APHELION · 深空寒冰 (Dark) ---- */
+  :root[data-skin="aphelion"][data-mode="dark"] {
+    --bg: #05070d; --bg2: #0a0f1c; --card: #0d1320; --card-2: #121a2b;
+    --ink: #e6edf7; --muted: #7d8aa6; --line: rgba(79, 209, 224, 0.16);
+    --primary: #4fd1e0; --primary-solid: #1f8fa3; --on-primary: #02080a;
+    --secondary: #6b8cff; --tertiary: #b9c7e0; --shadow: rgba(0,0,0,0.6);
+    --font-display: 'Space Grotesk'; --font-body: 'Space Grotesk'; --font-mono: 'Space Mono';
+  }
 }
