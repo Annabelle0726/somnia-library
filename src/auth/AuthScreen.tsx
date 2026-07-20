@@ -49,7 +49,7 @@ export default function AuthScreen() {
                         <p className="text-theme-ink/70 italic">Somnia Library</p>
                     </h2>
                     <p className="text-xs font-mono tracking-widest text-amber-600/80 uppercase mt-2">
-                        {mode === 'login' ? '[ Initiation ]' : '[ Registry ]'}
+                        {mode === 'login' ? '[ Login ]' : '[ Registry ]'}
                     </p>
                 </div>
 
