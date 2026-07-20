@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './auth/AuthProvider';
 
@@ -27,7 +27,7 @@ export default function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
-                <BrowserRouter basename={basename}>
+                <HashRouter basename={basename}>
                     <Routes>
                         {/* 🌟 1. 公共路由：不需要侧边栏 */}
                         <Route element={<UnauthShell />}>
@@ -55,7 +55,7 @@ export default function App() {
                             <Route path="theme" element={<Theme />} />
                         </Route>
                     </Routes>
-                </BrowserRouter>
+                </HashRouter>
             </AuthProvider>
         </ThemeProvider>
     );
