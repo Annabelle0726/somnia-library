@@ -7,10 +7,10 @@ export function LandingActionButtons() {
             <Link
                 to="/auth?mode=login"
                 className="group relative w-48 h-12 flex items-center justify-center
-                           border border-nocturne-line/40 bg-nocturne-bg1/60 backdrop-blur-md
-                           rounded-xl text-nocturne-ink/70 font-mono text-xs tracking-[0.2em] uppercase
+                           border border-line bg-card/60 backdrop-blur-md
+                           rounded-xl text-ink/70 font-mono text-xs tracking-[0.2em] uppercase
                            transition-all duration-500 ease-out
-                           hover:border-nocturne-gold/60 hover:text-nocturne-gold hover:bg-nocturne-bg1/80"
+                           hover:border-tertiary/60 hover:text-tertiary hover:bg-card/90"
             >
                 {/* 括号动画 */}
                 <span className="inline-flex items-center gap-0 transition-all duration-300">
@@ -29,19 +29,19 @@ export function LandingActionButtons() {
                 to="/auth?mode=signup"
                 className="group relative w-48 h-12 flex items-center justify-center
                            rounded-xl font-mono text-xs tracking-[0.2em] uppercase
-                           border border-nocturne-primary/50 bg-nocturne-primary/10
-                           text-nocturne-primary backdrop-blur-sm
+                           border border-primary/50 bg-primary/10
+                           text-primary backdrop-blur-sm
                            transition-all duration-500 ease-out
-                           hover:border-nocturne-primary hover:text-nocturne-bg0
+                           hover:border-primary hover:text-on-primary
                            overflow-hidden"
             >
-                {/* 填充动画层 */}
-                <span className="absolute inset-0 bg-gradient-to-r from-nocturne-primary/90 via-nocturne-gold/80 to-nocturne-primary/90
+                {/* 填充动画层：从 Tertiary (金色) 到 Primary (主色) 的渐变填充 */}
+                <span className="absolute inset-0 bg-gradient-to-r from-primary via-tertiary to-primary
                                  scale-x-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]
                                  group-hover:scale-x-100" />
 
                 {/* 文字与图标 */}
-                <span className="relative inline-flex items-center gap-2 font-medium">
+                <span className="relative z-10 inline-flex items-center gap-2 font-medium">
                     Get Started
                     <span className="text-sm leading-none transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </span>

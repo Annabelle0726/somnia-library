@@ -38,16 +38,60 @@
   3. 皮肤 Token 契约层 (6 套主题)
   ============================================================
 */
+@font-face {
+  font-family: 'cinzel_decorativeregular';
+  src: url('./assets/fonts/cinzeldecorative-regular-webfont.woff2') format('woff2'),
+  url('./assets/fonts/cinzeldecorative-regular-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'cormorant_garamondlight';
+  src: url('./assets/fonts/cormorantgaramond-variablefont_wght-webfont.woff2') format('woff2'),
+  url('./assets/fonts/cormorantgaramond-variablefont_wght-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'playfair_displayregular';
+  src: url('./assets/fonts/playfairdisplay-variablefont_wght-webfont.woff2') format('woff2'),
+  url('./assets/fonts/playfairdisplay-variablefont_wght-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'carattereregular';
+  src: url('./assets/fonts/carattere-regular-webfont.woff2') format('woff2'),
+  url('./assets/fonts/carattere-regular-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+@font-face {
+  font-family: 'cookieregular';
+  src: url('./assets/fonts/cookie-regular-webfont.woff2') format('woff2'),
+  url('./assets/fonts/cookie-regular-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @layer base {
   :root {
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* 默认安全回退字体 */
     --font-display: 'Fraunces', Georgia, serif;
-    --font-body: 'Hanken Grotesk', system-ui, sans-serif;
-    --font-mono: 'Space Mono', monospace;
+    --font-body: 'carattereregular', sans-serif;
+    --font-mono: 'cookieregular', sans-serif;
+    /* ✨ 新增：优雅花体 / 衬线体变量 */
+    --font-serif-fancy: 'cormorant_garamondlight', Georgia, serif;
+    --font-decorative: 'cinzel_decorativeregular', serif;
+    --font-italic-fancy: 'playfair_displayregular', serif;
   }
 
   body {
@@ -66,9 +110,15 @@
 
   /* ---- 1. NOCTURNE · 暗黑深渊 (Dark) ---- */
   :root, :root[data-skin="nocturne"][data-mode="dark"] {
-    --bg: #0b0612; --bg2: #15091f; --card: rgba(26, 14, 36, 0.52); --card-2: #21102f;
-    --ink: #f6e9f1; --muted: #b08fae; --line: rgba(246, 233, 241, 0.14);
-    --primary: #e83a78; --primary-solid: #cf2f66; --on-primary: #ffffff;
+    --bg: #0b0612;
+    --bg2: #15091f;
+    --card: rgba(26, 14, 36, 0.52);
+    --card-2: #21102f;
+    --ink: #f6e9f1;
+    --muted: #b08fae;
+    --line: rgba(246, 233, 241, 0.14);
+    --primary: #e83a78;
+    --primary-solid: #cf2f66; --on-primary: #ffffff;
     --secondary: #7b3fa0; --tertiary: #f0b14e; --shadow: rgba(0,0,0,0.5);
     --font-display: 'Fraunces'; --font-body: 'Hanken Grotesk'; --font-mono: 'Space Mono';
   }

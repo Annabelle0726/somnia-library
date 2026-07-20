@@ -117,14 +117,20 @@ export function Bookshelf() {
             {/* ====== 书籍展示区（保持原样，仅微调间距） ====== */}
             <div className="flex justify-center mt-2 items-center">
                 {loading ? (
-                    <div className="w-full flex flex-col items-center justify-center py-4 gap-2 text-theme-gold">
+                    <div className="w-full flex flex-col items-center justify-center py-4 gap-2">
                         <div className="w-6 h-6 border-2 border-theme-primary border-t-transparent rounded-full animate-spin" />
-                        <p className="animate-pulse text-xs italic tracking-widest">Whispering to the vault...</p>
+                        <p className="animate-pulse text-xs italic font-[family-name:var(--font-mono)] tracking-widest">
+                            Whispering to the vault...
+                        </p>
                     </div>
                 ) : books.length === 0 ? (
                     <div className="w-full text-center py-3 select-none">
-                        <p className="text-theme-ink/60 italic text-base">
-                            "Mark a book <span className="text-theme-primary font-bold">'Reading'</span> and your home comes alive."
+                        <p className="font-[family-name:var(--font-decorative)] text-sm md:text-base text-ink/80 text-center tracking-widest">
+                            "Mark a book{" "}
+                            <span className="font-[family-name:var(--font-italic-fancy)] text-[var(--primary)]">
+        'Reading'
+      </span>{" "}
+                            and your home comes alive."
                         </p>
                     </div>
                 ) : (

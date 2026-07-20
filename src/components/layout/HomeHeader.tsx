@@ -41,7 +41,9 @@ export function HomeHeader() {
                         {/* 使用 tertiary (第三强调色，替代原本写死的 gold) */}
                         <div className="w-5 h-[1px] bg-gradient-to-r from-tertiary to-transparent"></div>
                         <span
-                            className="text-[9px] text-tertiary font-bold tracking-[0.4em] font-sans uppercase whitespace-nowrap drop-shadow-sm">
+                            className="text-[13px] text-tertiary font-bold
+                             tracking-[0.4em] font-[family-name:var(--font-decorative)]
+                            uppercase whitespace-nowrap drop-shadow-sm">
                                 The Chronicle Chamber
                             </span>
                     </div>
@@ -52,22 +54,26 @@ export function HomeHeader() {
                 <div
                     className="flex items-center gap-3 bg-gradient-to-r from-card to-bg2/80 backdrop-blur-lg border border-line px-4 py-1.5 rounded-xl shadow-lg border-r-2 border-r-tertiary/60 border-l-2 border-l-primary/40 hover:border-tertiary transition-all duration-300">
                     <div className="text-center pr-3 border-r border-line/60">
-                            <span
-                                className="block text-[9px] text-tertiary/90 tracking-widest font-sans font-bold leading-none">
-                                CHRONICLE
-                            </span>
-                        <span className="text-xs font-mono font-bold text-tertiary tracking-wider mt-0.5 block">
-                                {chronicle.year}
-                            </span>
+        {/*                */}
+                        {/* 年份统一为 11px */}
+                        <span className="text-[11px]
+                         font-[family-name:var(--font-body)]
+                         font-bold text-tertiary tracking-wider mt-0.5 block">
+            {chronicle.year}
+        </span>
                     </div>
                     <div className="text-left pl-1 min-w-[75px]">
-                        {/* 字体使用 font-body 或 font-display */}
-                        <span className="block text-xs font-body font-medium text-ink tracking-wide leading-tight">
-                                {chronicle.month} {chronicle.day}
-                            </span>
-                        <span className="block text-[11px] font-mono text-primary tracking-wider font-semibold mt-0.5">
-                                {chronicle.time}
-                            </span>
+                        {/* 月日统一为 11px */}
+                        <span className="block text-[11px] font-medium text-ink
+                         font-[family-name:var(--font-body)]
+                        tracking-wide leading-tight">
+            {chronicle.month} {chronicle.day}
+        </span>
+                        {/* 时间统一为 11px */}
+                        <span className="block text-[11px]
+                         font-[family-name:var(--font-body)] text-primary tracking-wider font-semibold mt-0.5">
+            {chronicle.time}
+        </span>
                     </div>
                 </div>
             </div>

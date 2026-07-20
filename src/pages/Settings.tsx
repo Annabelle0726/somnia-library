@@ -20,9 +20,7 @@ export function Settings() {
                 </h2>
 
                 <button
-                    onClick={handleLogout}
-                    className="px-5 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-                >
+                    onClick={handleLogout}>
                     Logout
                 </button>
             </section>
