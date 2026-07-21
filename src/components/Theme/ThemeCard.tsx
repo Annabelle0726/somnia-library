@@ -1,15 +1,18 @@
 // src/components/Theme/ThemeCard.tsx
 import React from 'react';
-// ✅ 路径修正：从 components/Theme 往上退两层引入 theme/themes
 import type { ThemeItem } from '../../theme/themes';
 
 interface ThemeCardProps {
     theme: ThemeItem;
     isActive: boolean;
+    currentMode: 'light' | 'dark'; // 接收当前的明暗状态
     onSelect: (id: string) => void;
 }
 
-export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, onSelect }) => {
+export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, currentMode, onSelect }) => {
+    // 动态提取当前模式对应的配色
+    const colors = theme[currentMode];
+
     return (
         <div
             className={`relative overflow-hidden rounded-[24px] border transition-all duration-500 ease-out group 
@@ -18,19 +21,23 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, onSelect 
                 : 'border-line shadow-sm hover:shadow-md hover:scale-[1.01]'
             }`}
         >
-            <div className={`p-8 h-full flex flex-col transition-colors duration-300 ${theme.previewBg} ${theme.previewText}`}>
+            {/* 使用 style 动态应用背景色和文本色，并添加 transition 产生丝滑过渡 */}
+            <div
+                className="p-8 h-full flex flex-col transition-colors duration-500 ease-in-out"
+                style={{ backgroundColor: colors.bg, color: colors.text }}
+            >
                 <div className="text-[10px] font-bold tracking-[0.2em] uppercase opacity-70 mb-3">
-                    {theme.category}
+                    {currentMode}
                 </div>
 
                 <h2 className="text-3xl font-serif-fancy font-bold mb-2">{theme.name}</h2>
                 <p className="opacity-80 text-sm mb-6 font-light h-10">{theme.description}</p>
 
                 <div className="flex gap-2 mb-8">
-                    {theme.swatches.map((color, idx) => (
+                    {colors.swatches.map((color, idx) => (
                         <div
                             key={idx}
-                            className="w-6 h-6 rounded-full border border-black/10 shadow-inner"
+                            className="w-6 h-6 rounded-full border border-black/10 shadow-inner transition-colors duration-500"
                             style={{ backgroundColor: color }}
                         />
                     ))}
@@ -41,14 +48,14 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, onSelect 
                         Tag
                     </span>
                     <span
-                        className="px-4 py-1.5 rounded-full text-white font-medium shadow-md"
-                        style={{ backgroundColor: theme.primaryColor }}
+                        className="px-4 py-1.5 rounded-full text-white font-medium shadow-md transition-colors duration-500"
+                        style={{ backgroundColor: colors.primary }}
                     >
                         Primary
                     </span>
                     <span
-                        className="font-serif-fancy italic hover:underline cursor-pointer opacity-90"
-                        style={{ color: theme.primaryColor }}
+                        className="font-serif-fancy italic hover:underline cursor-pointer opacity-90 transition-colors duration-500"
+                        style={{ color: colors.primary }}
                     >
                         Link text
                     </span>
@@ -67,7 +74,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, onSelect 
                     <button
                         onClick={() => onSelect(theme.id)}
                         disabled={isActive}
-                        style={isActive ? {} : { backgroundColor: theme.primaryColor, color: '#fff' }}
+                        style={isActive ? {} : { backgroundColor: colors.primary, color: '#fff' }}
                         className={`px-6 py-2.5 rounded-full font-medium transition-all duration-300 
                             ${isActive
                             ? 'border-2 border-current bg-transparent opacity-60 cursor-default'
@@ -81,5 +88,3 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, onSelect 
         </div>
     );
 };
-
-// ❌ 注意：底部不需要写任何 class！全部删掉！
