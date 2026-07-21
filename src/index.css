@@ -27,7 +27,6 @@
   --color-on-primary: var(--on-primary);
   --color-secondary: var(--secondary);
   --color-tertiary: var(--tertiary);
-
   --font-display: var(--font-display), Georgia, serif;
   --font-body: var(--font-body), system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, monospace;
@@ -86,7 +85,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     --font-display: 'Fraunces', Georgia, serif;
-    --font-body: 'carattereregular', sans-serif;
+    --font-body: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'Georgia', 'Times New Roman', 'carattereregular', serif;
     --font-mono: 'cookieregular', sans-serif;
     /* ✨ 新增：优雅花体 / 衬线体变量 */
     --font-serif-fancy: 'cormorant_garamondlight', Georgia, serif;

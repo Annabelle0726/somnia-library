@@ -1,6 +1,6 @@
 // src/auth/AuthProvider.tsx
 import React, { createContext, useState, useEffect } from 'react';
-import { supabase } from "../lib/supabase"; // 1. 去掉 .ts 后缀，防止编译报错
+import { supabase } from "../lib/supabase";
 import type { User } from '@supabase/supabase-js';
 
 // 定义 Context 的类型
