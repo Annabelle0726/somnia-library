@@ -8,9 +8,7 @@ export default function Landing() {
         /* 1. 主容器：使用主题定义的 bg-bg 与 font-body，移除内联 style 注入 */
         <div className="min-h-screen flex flex-col bg-bg font-body
          selection:bg-tertiary/30
-         relative overflow-hidden text-ink
-         {/*pt-24*/}
-         ">
+         relative overflow-hidden text-ink">
 
             {/* 🌟 1. 干净深邃的底色背景 */ }
             <div className="absolute inset-0 bg-bg z-0" />

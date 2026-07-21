@@ -24,7 +24,8 @@ export function Layout() {
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                     /* 2. 修改：更新了按钮悬浮态的色值类名 (text-ink, hover:bg-card/80, hover:border-line, hover:text-primary) */
-                    className="absolute bottom-4 left-4 z-20 p-2 rounded-md transition-all duration-300 backdrop-blur-md
+                    className="fixed bottom-4 left-[calc(20%+5px)] z-50 p-2 rounded-md
+                     transition-all duration-300 backdrop-blur-md
         /* 🌑 默认（不活跃）状态 */
         opacity-30 bg-transparent border border-transparent text-ink
         /* 🌟 悬浮（活跃）状态 */

@@ -17,7 +17,7 @@ export function Nav({ isCollapsed }: NavProps) {
         { name: 'Clubs', icon: '🏛️' },
     ];
 
-    /* ✨ 1. 更新了功能按钮的高亮与悬浮类名，匹配新 Theme Token */
+    /* ✨ 1. 更新了功能按钮的高亮与悬浮类名，匹配新 theme Token */
     const functionButtons = [
         {
             name: 'AddBook',
@@ -87,7 +87,6 @@ export function Nav({ isCollapsed }: NavProps) {
                     >
                         [
                     </span>
-
                                 <div
                                     className={`flex items-center justify-center mx-1 md:mx-1.5 
                         transition-all duration-300 ${
@@ -164,8 +163,7 @@ export function Nav({ isCollapsed }: NavProps) {
                                 className={`flex items-center border rounded-xl transition-all duration-300
                     text-xs font-[family-name:var(--font-serif-fancy)] tracking-wider whitespace-nowrap overflow-hidden
                     justify-center
-                    ${
-                                    isCollapsed
+                    ${isCollapsed
                                         ? 'w-10 h-10 p-0 rounded-full'
                                         : '' +
                                         ' w-full max-w-[180px] px-3 py-2'

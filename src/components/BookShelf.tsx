@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../../supabaseClient'
-import { BookSpine } from './BookSpine'
+import { supabase } from '../supabaseClient.ts'
+import { BookSpine } from './features/BookSpine.tsx'
 
 interface Book {
     id: string
@@ -27,7 +27,6 @@ export function Bookshelf() {
 
     return (
         <div className="flex flex-col gap-8 w-full">
-
             {/* ====== ✨ 图书馆控制面板（优化后） ====== */}
             <div>
                 {/*

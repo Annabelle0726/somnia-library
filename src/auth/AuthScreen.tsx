@@ -43,12 +43,11 @@ export default function AuthScreen() {
 
         <div className="min-h-screen flex flex-col
         items-center bg-[var(--bg)]
-        {/*pt-24*/}
         font-[family-name:var(--font-body)] text-[var(--ink)] relative">
 
-            {/* Header 自然留在顶部 */}
             <LandingHeader />
-            <div className="flex-1 flex items-center justify-center w-full px-4 ">
+            <div className="flex-1 flex items-center justify-center
+             w-full px-4 ">
                 <div className="z-10 w-full max-w-md p-8 bg-[var(--card)] backdrop-blur-xl border
                 border-[var(--line)] rounded-xl shadow-2xl">
                     <div className="text-center mb-8">

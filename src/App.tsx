@@ -1,6 +1,6 @@
 import './App.css'
 import { HashRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeProvider } from './theme/ThemeContext';
 import { AuthProvider } from './auth/AuthProvider';
 
 // 内部页面
@@ -10,7 +10,7 @@ import Library from './pages/Library';
 import Shelves from './pages/Shelves';
 import Match from './pages/Match';
 import Discover from './pages/Discover';
-import {Theme} from "./pages/Theme.tsx";
+import Theme from "./pages/Theme";
 import Stats from "./pages/Stats.tsx";
 import {AddBook} from "./pages/AddBook.tsx";
 import {Settings} from "./pages/Settings.tsx";

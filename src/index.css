@@ -1,169 +1,306 @@
 @import "tailwindcss";
-
-/*
-  ============================================================
-  1. 全局字体加载
-  包含你截图里那种优雅的衬线体，以及现代无衬线体
-  ============================================================
-*/
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900&family=Hanken+Grotesk:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Spectral:wght@400;500&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600&display=swap');
 
-/*
-  ============================================================
-  2. Tailwind v4 @theme 变量映射
-  让 Tailwind 能够直接使用 className="bg-bg text-ink border-line"
-  ============================================================
-*/
-@theme {
-  --color-bg: var(--bg) !important;
-  --color-bg2: var(--bg2);
-  --color-card: var(--card);
-  --color-card-2: var(--card-2);
-  --color-ink: var(--ink);
-  --color-muted: var(--muted);
-  --color-line: var(--line);
-  --color-primary: var(--primary);
-  --color-primary-solid: var(--primary-solid);
-  --color-on-primary: var(--on-primary);
-  --color-secondary: var(--secondary);
-  --color-tertiary: var(--tertiary);
-  --font-display: var(--font-display), Georgia, serif;
-  --font-body: var(--font-body), system-ui, sans-serif;
-  --font-mono: var(--font-mono), ui-monospace, monospace;
-}
 
-/*
-  ============================================================
-  3. 皮肤 Token 契约层 (6 套主题)
-  ============================================================
-*/
 @font-face {
-  font-family: 'cinzel_decorativeregular';
-  src: url('./assets/fonts/cinzeldecorative-regular-webfont.woff2') format('woff2'),
-  url('./assets/fonts/cinzeldecorative-regular-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'cinzel_decorativeregular';
+    src: url('./assets/fonts/cinzeldecorative-regular-webfont.woff2') format('woff2'),
+    url('./assets/fonts/cinzeldecorative-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: 'cormorant_garamondlight';
-  src: url('./assets/fonts/cormorantgaramond-variablefont_wght-webfont.woff2') format('woff2'),
-  url('./assets/fonts/cormorantgaramond-variablefont_wght-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'cormorant_garamondlight';
+    src: url('./assets/fonts/cormorantgaramond-variablefont_wght-webfont.woff2') format('woff2'),
+    url('./assets/fonts/cormorantgaramond-variablefont_wght-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: 'playfair_displayregular';
-  src: url('./assets/fonts/playfairdisplay-variablefont_wght-webfont.woff2') format('woff2'),
-  url('./assets/fonts/playfairdisplay-variablefont_wght-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'playfair_displayregular';
+    src: url('./assets/fonts/playfairdisplay-variablefont_wght-webfont.woff2') format('woff2'),
+    url('./assets/fonts/playfairdisplay-variablefont_wght-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: 'carattereregular';
-  src: url('./assets/fonts/carattere-regular-webfont.woff2') format('woff2'),
-  url('./assets/fonts/carattere-regular-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'carattereregular';
+    src: url('./assets/fonts/carattere-regular-webfont.woff2') format('woff2'),
+    url('./assets/fonts/carattere-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 
 }
 
 @font-face {
-  font-family: 'cookieregular';
-  src: url('./assets/fonts/cookie-regular-webfont.woff2') format('woff2'),
-  url('./assets/fonts/cookie-regular-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'cookieregular';
+    src: url('./assets/fonts/cookie-regular-webfont.woff2') format('woff2'),
+    url('./assets/fonts/cookie-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 }
 
 @layer base {
-  :root {
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    --font-display: 'Fraunces', Georgia, serif;
-    --font-body: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'Georgia', 'Times New Roman', 'carattereregular', serif;
-    --font-mono: 'cookieregular', sans-serif;
-    /* ✨ 新增：优雅花体 / 衬线体变量 */
-    --font-serif-fancy: 'cormorant_garamondlight', Georgia, serif;
-    --font-decorative: 'cinzel_decorativeregular', serif;
-    --font-italic-fancy: 'playfair_displayregular', serif;
-  }
+    :root {
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        --font-display: 'Fraunces', Georgia, serif;
+        --font-body: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'Georgia', 'Times New Roman', 'carattereregular', serif;
+        --font-mono: 'cookieregular', sans-serif;
+        /* ✨ 新增：优雅花体 / 衬线体变量 */
+        --font-serif-fancy: 'cormorant_garamondlight', Georgia, serif;
+        --font-decorative: 'cinzel_decorativeregular', serif;
+        --font-italic-fancy: 'playfair_displayregular', serif;
+    }
 
-  body {
-    background-color: var(--bg);
-    color: var(--ink);
-    font-family: var(--font-body);
-    transition: background-color 0.6s ease, color 0.45s ease;
-    margin: 0;
-    min-height: 100svh;
-  }
+    body {
+        background-color: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-body);
+        transition: background-color 0.6s ease, color 0.45s ease;
+        margin: 0;
+        min-height: 100svh;
+    }
 
-  ::selection {
-    background: var(--primary-solid);
-    color: var(--on-primary);
-  }
+    ::selection {
+        background: var(--primary-solid);
+        color: var(--on-primary);
+    }
+    /*
+      ============================================================
+      2. Tailwind v4 @theme 变量映射
+      让 Tailwind 能够直接使用 className="bg-bg text-ink border-line"
+      ============================================================
+    */
+    @theme {
+        --color-bg: var(--bg) !important;
+        --color-bg2: var(--bg2);
+        --color-card: var(--card);
+        --color-card-2: var(--card-2);
+        --color-ink: var(--ink);
+        --color-muted: var(--muted);
+        --color-line: var(--line);
+        --color-primary: var(--primary);
+        --color-primary-solid: var(--primary-solid);
+        --color-on-primary: var(--on-primary);
+        --color-secondary: var(--secondary);
+        --color-tertiary: var(--tertiary);
+        --font-display: var(--font-display), Georgia, serif;
+        --font-body: var(--font-body), system-ui, sans-serif;
+        --font-mono: var(--font-mono), ui-monospace, monospace;
+    }
+    /*
+          ============================================================
+          3. 皮肤 Token 契约层 (6 套皮肤 × 2 种模式 = 12 套配色)
+          ============================================================
+        */
 
-  /* ---- 1. NOCTURNE · 暗黑深渊 (Dark) ---- */
-  :root, :root[data-skin="nocturne"][data-mode="dark"] {
-    --bg: #0b0612;
-    --bg2: #15091f;
-    --card: rgba(26, 14, 36, 0.52);
-    --card-2: #21102f;
-    --ink: #f6e9f1;
-    --muted: #b08fae;
-    --line: rgba(246, 233, 241, 0.14);
-    --primary: #e83a78;
-    --primary-solid: #cf2f66; --on-primary: #ffffff;
-    --secondary: #7b3fa0; --tertiary: #f0b14e; --shadow: rgba(0,0,0,0.5);
-    --font-display: 'Fraunces'; --font-body: 'Hanken Grotesk'; --font-mono: 'Space Mono';
-  }
+    /* ---------------- 1. NOCTURNE (暗黑深渊) ---------------- */
+    /* Light Mode */
+    :root[data-skin="nocturne"][data-mode="light"] {
+        --bg: #f8f5fa;
+        --bg2: #efe9f3;
+        --card: rgba(255, 255, 255, 0.8);
+        --card-2: #e5dceb;
+        --ink: #1b1026;
+        --muted: #786180;
+        --line: rgba(232, 58, 120, 0.18);
+        --primary: #d82b68;
+        --primary-solid: #b51f53;
+        --on-primary: #ffffff;
+        --secondary: #692c8e;
+        --tertiary: #c77b0e;
+        --shadow: rgba(27, 16, 38, 0.08);
+    }
+    /* Dark Mode (默认) */
+    :root, :root[data-skin="nocturne"], :root[data-skin="nocturne"][data-mode="dark"] {
+        --bg: #0b0612;
+        --bg2: #15091f;
+        --card: rgba(26, 14, 36, 0.52);
+        --card-2: #21102f;
+        --ink: #f6e9f1;
+        --muted: #b08fae;
+        --line: rgba(246, 233, 241, 0.14);
+        --primary: #e83a78;
+        --primary-solid: #cf2f66;
+        --on-primary: #ffffff;
+        --secondary: #7b3fa0;
+        --tertiary: #f0b14e;
+        --shadow: rgba(0, 0, 0, 0.5);
+    }
 
-  /* ---- 2. MAGNOLIA · 白昼木兰 (Light - 接近你截图的风格) ---- */
-  :root[data-skin="magnolia"][data-mode="light"] {
-    --bg: #faf9f6; --bg2: #f0ede9; --card: rgba(255, 255, 255, 0.6); --card-2: #e3deda;
-    --ink: #2a1a2e; --muted: #736b7a; --line: rgba(200, 45, 90, 0.15);
-    --primary: #c82d5a; --primary-solid: #a32247; --on-primary: #ffffff;
-    --secondary: #64328c; --tertiary: #c88228; --shadow: rgba(0,0,0,0.05);
-    --font-display: 'Fraunces'; --font-body: 'Inter'; --font-mono: 'Space Mono';
-  }
+    /* ---------------- 2. MAGNOLIA (白昼木兰) ---------------- */
+    /* Light Mode (默认) */
+    :root[data-skin="magnolia"], :root[data-skin="magnolia"][data-mode="light"] {
+        --bg: #faf9f6;
+        --bg2: #f0ede9;
+        --card: rgba(255, 255, 255, 0.6);
+        --card-2: #e3deda;
+        --ink: #2a1a2e;
+        --muted: #736b7a;
+        --line: rgba(200, 45, 90, 0.15);
+        --primary: #c82d5a;
+        --primary-solid: #a32247;
+        --on-primary: #ffffff;
+        --secondary: #64328c;
+        --tertiary: #c88228;
+        --shadow: rgba(0, 0, 0, 0.05);
+    }
+    /* Dark Mode */
+    :root[data-skin="magnolia"][data-mode="dark"] {
+        --bg: #161019;
+        --bg2: #211826;
+        --card: rgba(43, 31, 49, 0.6);
+        --card-2: #302237;
+        --ink: #f2eaf5;
+        --muted: #a092a8;
+        --line: rgba(232, 77, 122, 0.2);
+        --primary: #e84d7a;
+        --primary-solid: #c82d5a;
+        --on-primary: #ffffff;
+        --secondary: #9754cc;
+        --tertiary: #e69d43;
+        --shadow: rgba(0, 0, 0, 0.45);
+    }
 
-  /* ---- 3. GLOAMING · 暮色黄昏 (Dark) ---- */
-  :root[data-skin="gloaming"][data-mode="dark"] {
-    --bg: #1a1b2e; --bg2: #212236; --card: rgba(42, 43, 66, 0.6); --card-2: #31334c;
-    --ink: #e2e2ee; --muted: #8a8ca8; --line: rgba(184, 92, 122, 0.2);
-    --primary: #b85c7a; --primary-solid: #9c4b65; --on-primary: #ffffff;
-    --secondary: #5c4d8c; --tertiary: #d4a373; --shadow: rgba(0,0,0,0.4);
-    --font-display: 'Spectral'; --font-body: 'Inter'; --font-mono: 'Fira Code';
-  }
+    /* ---------------- 3. GLOAMING (暮色黄昏) ---------------- */
+    /* Light Mode */
+    :root[data-skin="gloaming"][data-mode="light"] {
+        --bg: #f4f4f8;
+        --bg2: #e6e6f0;
+        --card: rgba(255, 255, 255, 0.8);
+        --card-2: #dbdbe8;
+        --ink: #1c1d2e;
+        --muted: #626480;
+        --line: rgba(156, 67, 96, 0.18);
+        --primary: #9c4360;
+        --primary-solid: #80334c;
+        --on-primary: #ffffff;
+        --secondary: #4a3e73;
+        --tertiary: #b07a48;
+        --shadow: rgba(28, 29, 46, 0.08);
+    }
+    /* Dark Mode (默认) */
+    :root[data-skin="gloaming"], :root[data-skin="gloaming"][data-mode="dark"] {
+        --bg: #1a1b2e;
+        --bg2: #212236;
+        --card: rgba(42, 43, 66, 0.6);
+        --card-2: #31334c;
+        --ink: #e2e2ee;
+        --muted: #8a8ca8;
+        --line: rgba(184, 92, 122, 0.2);
+        --primary: #b85c7a;
+        --primary-solid: #9c4b65;
+        --on-primary: #ffffff;
+        --secondary: #5c4d8c;
+        --tertiary: #d4a373;
+        --shadow: rgba(0, 0, 0, 0.4);
+    }
 
-  /* ---- 4. REVERIE · 哥特夜架 (Light) ---- */
-  :root[data-skin="reverie"][data-mode="light"] {
-    --bg: #fbeee9; --bg2: #f5e0e4; --card: #fffaf6; --card-2: #fdf2ee;
-    --ink: #2a1320; --muted: #86566f; --line: rgba(201, 132, 47, 0.22);
-    --primary: #c52e5f; --primary-solid: #c52e5f; --on-primary: #ffffff;
-    --secondary: #7b3fa0; --tertiary: #c9842f; --shadow: rgba(60, 20, 40, 0.12);
-    --font-display: 'Fraunces'; --font-body: 'Hanken Grotesk'; --font-mono: 'Space Mono';
-  }
+    /* ---------------- 4. REVERIE (哥特夜架) ---------------- */
+    /* Light Mode (默认) */
+    :root[data-skin="reverie"], :root[data-skin="reverie"][data-mode="light"] {
+        --bg: #fbeee9;
+        --bg2: #f5e0e4;
+        --card: #fffaf6;
+        --card-2: #fdf2ee;
+        --ink: #2a1320;
+        --muted: #86566f;
+        --line: rgba(201, 132, 47, 0.22);
+        --primary: #c52e5f;
+        --primary-solid: #a3204a;
+        --on-primary: #ffffff;
+        --secondary: #7b3fa0;
+        --tertiary: #c9842f;
+        --shadow: rgba(60, 20, 40, 0.12);
+    }
+    /* Dark Mode */
+    :root[data-skin="reverie"][data-mode="dark"] {
+        --bg: #1a0b14;
+        --bg2: #26111e;
+        --card: rgba(51, 23, 40, 0.6);
+        --card-2: #3d1b30;
+        --ink: #fcecf4;
+        --muted: #b886a0;
+        --line: rgba(227, 155, 68, 0.25);
+        --primary: #e23f72;
+        --primary-solid: #c52e5f;
+        --on-primary: #ffffff;
+        --secondary: #a057cb;
+        --tertiary: #e09843;
+        --shadow: rgba(0, 0, 0, 0.5);
+    }
 
-  /* ---- 5. GRIMOIRE · 羊皮卷宗 (Dark) ---- */
-  :root[data-skin="grimoire"][data-mode="dark"] {
-    --bg: #0c0f0b; --bg2: #12160f; --card: #161b12; --card-2: #1d2417;
-    --ink: #ece7d6; --muted: #9aa384; --line: rgba(212, 175, 55, 0.18);
-    --primary: #3aa97e; --primary-solid: #2f9e74; --on-primary: #08110b;
-    --secondary: #b08828; --tertiary: #d4af37; --shadow: rgba(0,0,0,0.55);
-    --font-display: 'Cormorant Garamond'; --font-body: 'Spectral'; --font-mono: 'Space Mono';
-  }
+    /* ---------------- 5. GRIMOIRE (羊皮卷宗) ---------------- */
+    /* Light Mode */
+    :root[data-skin="grimoire"][data-mode="light"] {
+        --bg: #f4efe2;
+        --bg2: #e8e1cf;
+        --card: rgba(253, 251, 245, 0.85);
+        --card-2: #ded5bf;
+        --ink: #1c2419;
+        --muted: #5e6650;
+        --line: rgba(140, 106, 29, 0.2);
+        --primary: #1f6b4e;
+        --primary-solid: #154e38;
+        --on-primary: #ffffff;
+        --secondary: #8c6a1d;
+        --tertiary: #a87d27;
+        --shadow: rgba(28, 36, 25, 0.08);
+    }
+    /* Dark Mode (默认) */
+    :root[data-skin="grimoire"], :root[data-skin="grimoire"][data-mode="dark"] {
+        --bg: #0c0f0b;
+        --bg2: #12160f;
+        --card: #161b12;
+        --card-2: #1d2417;
+        --ink: #ece7d6;
+        --muted: #9aa384;
+        --line: rgba(212, 175, 55, 0.18);
+        --primary: #3aa97e;
+        --primary-solid: #2f9e74;
+        --on-primary: #08110b;
+        --secondary: #b08828;
+        --tertiary: #d4af37;
+        --shadow: rgba(0, 0, 0, 0.55);
+    }
 
-  /* ---- 6. APHELION · 深空寒冰 (Dark) ---- */
-  :root[data-skin="aphelion"][data-mode="dark"] {
-    --bg: #05070d; --bg2: #0a0f1c; --card: #0d1320; --card-2: #121a2b;
-    --ink: #e6edf7; --muted: #7d8aa6; --line: rgba(79, 209, 224, 0.16);
-    --primary: #4fd1e0; --primary-solid: #1f8fa3; --on-primary: #02080a;
-    --secondary: #6b8cff; --tertiary: #b9c7e0; --shadow: rgba(0,0,0,0.6);
-    --font-display: 'Space Grotesk'; --font-body: 'Space Grotesk'; --font-mono: 'Space Mono';
-  }
+    /* ---------------- 6. APHELION (深空寒冰) ---------------- */
+    /* Light Mode */
+    :root[data-skin="aphelion"][data-mode="light"] {
+        --bg: #eff6ff;
+        --bg2: #e0f0fe;
+        --card: rgba(255, 255, 255, 0.85);
+        --card-2: #cce5fd;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: rgba(14, 116, 144, 0.2);
+        --primary: #0e7490;
+        --primary-solid: #085d75;
+        --on-primary: #ffffff;
+        --secondary: #2563eb;
+        --tertiary: #0284c7;
+        --shadow: rgba(15, 23, 42, 0.08);
+    }
+    /* Dark Mode (默认) */
+    :root[data-skin="aphelion"], :root[data-skin="aphelion"][data-mode="dark"] {
+        --bg: #05070d;
+        --bg2: #0a0f1c;
+        --card: #0d1320;
+        --card-2: #121a2b;
+        --ink: #e6edf7;
+        --muted: #7d8aa6;
+        --line: rgba(79, 209, 224, 0.16);
+        --primary: #4fd1e0;
+        --primary-solid: #1f8fa3;
+        --on-primary: #02080a;
+        --secondary: #6b8cff;
+        --tertiary: #b9c7e0;
+        --shadow: rgba(0, 0, 0, 0.6);
+    }
 }

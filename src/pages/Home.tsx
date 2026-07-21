@@ -1,5 +1,5 @@
 import { HomeHeader } from '../components/layout/HomeHeader.tsx'
-import { Bookshelf } from '../components/features/BookShelf'
+import { Bookshelf } from '../components/BookShelf.tsx'
 
 export default function Home() {
     return (
