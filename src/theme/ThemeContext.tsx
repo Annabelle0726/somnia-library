@@ -28,7 +28,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // 初始化 Mode：优先从 localStorage 读取，默认跟随系统 'system'
     const [mode, setMode] = useState<ThemeMode>(() => {
         const savedMode = localStorage.getItem(STORAGE_MODE_KEY) as ThemeMode;
-        return savedMode || 'system';
+        return savedMode || 'dark';
     });
 
     // 主效应：每当 theme 或 mode 变化时，同步更新 DOM 节点属性
