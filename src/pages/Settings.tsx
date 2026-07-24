@@ -1,30 +1,30 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
+import { ProfileSection } from '../components/settings/ProfileSection';
+import { SecuritySection } from '../components/settings/SecuritySection';
 
 export function Settings() {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         navigate('/Welcome');
     };
 
+    if (!user) return null; // 或者返回一个加载动
     return (
-        <div className="max-w-3xl mx-auto p-8">
+        <div className="flex flex-col gap-8 w-full">
+            <header className="mb-4">
+                <h1 className="text-3xl font-display font-bold">Settings</h1>
+                <p className="text-[var(--color-muted)] mt-2">
+                    Manage your account settings and personal information.
+                </p>
+            </header>
 
-            {/* Account */}
-            <section className="mb-8">
-                <h2 className="text-xl font-semibold mb-3">
-                    Account
-                </h2>
-
-                <button
-                    onClick={handleLogout}>
-                    Logout
-                </button>
-            </section>
-
+            <ProfileSection user={user} />
+            {/* 把 user 传给 Security 用于发重置邮件 */}
+            <SecuritySection onLogout={handleLogout} user={user} />
         </div>
     );
 }
