@@ -1,4 +1,4 @@
-// src/components/Theme/ThemeCard.tsx
+// src/components/theme/ThemeCard.tsx
 import React from 'react';
 import type { ThemeItem } from '../../theme/themes';
 

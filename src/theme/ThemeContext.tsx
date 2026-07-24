@@ -19,7 +19,7 @@ const STORAGE_THEME_KEY = 'somnia-theme';
 const STORAGE_MODE_KEY = 'somnia-mode';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-    // 初始化 Theme：优先从 localStorage 读取，默认使用 'nocturne'
+    // 初始化 theme：优先从 localStorage 读取，默认使用 'nocturne'
     const [theme, setTheme] = useState<ThemeSkin>(() => {
         const savedTheme = localStorage.getItem(STORAGE_THEME_KEY) as ThemeSkin;
         return savedTheme || 'nocturne';

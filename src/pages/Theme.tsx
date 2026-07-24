@@ -1,8 +1,8 @@
-// src/pages/Theme.tsx
+// src/pages/theme.tsx
 import { useState, useEffect } from 'react';
 import { useTheme, type ThemeSkin, type ThemeMode } from '../theme/ThemeContext';
 import { THEMES } from '../theme/themes';
-import { ThemeCard } from '../components/Theme/ThemeCard';
+import { ThemeCard } from '../components/theme/ThemeCard';
 
 export default function ThemePage() {
     const { theme: activeTheme, setTheme, mode: colorMode, setMode: setColorMode } = useTheme();

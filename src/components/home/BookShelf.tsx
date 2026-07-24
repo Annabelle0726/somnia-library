@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../supabaseClient.ts'
-import { BookSpine } from './features/BookSpine.tsx'
+import { supabase } from '../../supabaseClient.ts'
+import { BookSpine } from './BookSpine.tsx'
 
 interface Book {
     id: string
@@ -29,10 +29,6 @@ export function Bookshelf() {
         <div className="flex flex-col gap-8 w-full">
             {/* ====== ✨ 图书馆控制面板（优化后） ====== */}
             <div>
-                {/*
-                  1. 面板背景改用渐变 + 更深磨砂，增加立体感
-                  2. 边框变细但保留金色半透明，并加上微光阴影
-                */}
                 <div className="relative w-full
                     bg-gradient-to-br from-theme-bg2/40 via-theme-bg0/30 to-theme-bg1/20
                     backdrop-blur-lg
