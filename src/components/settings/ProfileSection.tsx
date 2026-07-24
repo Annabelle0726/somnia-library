@@ -1,38 +1,72 @@
-// // src/components/settings/ProfileSection.tsx
-import { useState } from 'react';
+// src/components/settings/ProfileSection.tsx
+import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import type { User } from '@supabase/supabase-js'; // 1. 引入 User 类型
+import type { User } from '@supabase/supabase-js';
 
-// 2. 定义组件 Props 的类型
 interface ProfileSectionProps {
     user: User;
 }
 
 export function ProfileSection({ user }: ProfileSectionProps) {
-    // 从 user.user_metadata 中读取默认值
     const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || '');
     const [sex, setSex] = useState(user?.user_metadata?.sex || 'unspecified');
 
-    // UI 反馈状态
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState({ text: '', type: '' });
+
+    // 1. 页面加载时：直接去 profiles 表抓取当前数据库里真正的显示名字
+    useEffect(() => {
+        let isMounted = true;
+        const fetchProfile = async () => {
+            if (!user?.id) return;
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*') // 把整行都取出来
+                .eq('id', user.id)
+                .single();
+
+            if (!error && data && isMounted) {
+                // 如果数据库里有值，优先用数据库 profiles 表的值！
+                if (data.display_name) setDisplayName(data.display_name);
+                if (data.sex) setSex(data.sex);
+            }
+        };
+        fetchProfile();
+        return () => { isMounted = false; };
+    }, [user?.id]);
 
     const handleSave = async () => {
         setIsSaving(true);
         setMessage({ text: '', type: '' });
 
         try {
-            const { error } = await supabase.auth.updateUser({
+            // 2. 第一步：先写进真正的 profiles 表！
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: user.id, // 使用 upsert：如果有就修改，没这条记录就新建，更稳定！
+                    email: user.email,
+                    display_name: displayName,
+                    sex: sex
+                });
+
+            if (profileError) {
+                console.error('保存到 profiles 表失败:', profileError);
+                throw new Error(`数据库错误: ${profileError.message}`);
+            }
+
+            // 3. 第二步：同步写进 auth.users 的 metadata（保证两边绝对一致！）
+            const { error: authError } = await supabase.auth.updateUser({
                 data: {
                     display_name: displayName,
                     sex: sex
                 }
             });
 
-            if (error) throw error;
+            if (authError) throw authError;
 
             setMessage({ text: 'Profile updated successfully!', type: 'success' });
-        } catch (error: any) { // 3. 解决 TS 报错：指定 error 类型为 any
+        } catch (error: any) {
             console.error('Error updating profile:', error);
             setMessage({ text: error?.message || 'Failed to update profile.', type: 'error' });
         } finally {
@@ -42,6 +76,7 @@ export function ProfileSection({ user }: ProfileSectionProps) {
     };
 
     return (
+        // ... UI 结构完全不用变，保留你原有的 JSX ...
         <section className="bg-[var(--color-card)] border border-[var(--color-line)] rounded-xl p-6 shadow-sm">
             <h2 className="text-xl font-semibold mb-6 text-[var(--color-ink)] border-b border-[var(--color-line)] pb-4">
                 Personal Information

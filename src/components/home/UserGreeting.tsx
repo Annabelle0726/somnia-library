@@ -5,11 +5,9 @@ import { supabase } from '../../lib/supabase';
 
 export function UserGreeting() {
     const { user } = useAuth();
-    // 状态：存储从数据库获取的 displayName
     const [displayName, setDisplayName] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    // 1. 获取问候语的逻辑
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour >= 5 && hour < 12) return 'Good morning';
@@ -18,7 +16,6 @@ export function UserGreeting() {
         return 'Good night';
     };
 
-    // 2. 从 Supabase Profiles 表中抓取名字
     useEffect(() => {
         let isMounted = true;
 
@@ -33,12 +30,12 @@ export function UserGreeting() {
                     .from('profiles')
                     .select('display_name')
                     .eq('id', user.id)
-                    .single(); // 我们只需要这一行数据
+                    .single();
 
                 if (error) {
-                    console.error('Error fetching profile:', error);
+                    console.error('Error fetching profile:', error.message);
                 } else if (data && isMounted) {
-                    setDisplayName(data.display_name);
+                    setDisplayName(data.display_name || '');
                 }
             } catch (err) {
                 console.error('Unexpected error fetching profile:', err);
@@ -48,14 +45,13 @@ export function UserGreeting() {
         };
 
         fetchProfileName();
-
         return () => {
             isMounted = false;
         };
-    }, [user?.id]); // 当 user.id 改变时重新运行
+    }, [user?.id]);
 
-    // 3. 回退逻辑：如果数据库没名字，用邮箱前缀，如果连邮箱都没有，叫 Reader
     const finalName = displayName
+        || user?.user_metadata?.display_name
         || (user?.email ? user.email.split('@')[0] : 'Reader');
 
     return (

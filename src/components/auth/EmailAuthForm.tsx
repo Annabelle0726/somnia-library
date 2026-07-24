@@ -164,7 +164,8 @@ export function EmailAuthForm() {
             {/* ========================================== */}
             {mode === 'signup' && step === 2 && (
                 <>
-                    <div className="text-xs font-[family-name:var(--font-mono)] text-[var(--primary)] mb-1">
+                    <div className="text-xs font-[family-name:var(--font-mono)]
+                    text-[var(--tertiary)] mb-1">
                         Step 2 of 2: Almost there! Tell us a bit about yourself.
                     </div>
 
