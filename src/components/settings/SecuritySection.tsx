@@ -11,6 +11,7 @@ interface SecuritySectionProps {
 
 export function SecuritySection({ onLogout, user }: SecuritySectionProps) {
     const [isResetting, setIsResetting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [message, setMessage] = useState('');
 
     const handleResetPassword = async () => {
@@ -32,6 +33,28 @@ export function SecuritySection({ onLogout, user }: SecuritySectionProps) {
             setTimeout(() => setMessage(''), 5000);
         }
     };
+
+    const handleDeleteAccount = async () => {
+        const confirmed = window.confirm(
+            'Are you sure you want to delete your account? This action is permanent and cannot be undone.'
+        );
+        if (!confirmed) return;
+
+        setIsDeleting(true);
+        try {
+            // 调用 Supabase RPC 函数注销账号
+            const {error} = await supabase.rpc('delete_user_account');
+            if (error) throw error;
+
+            alert('Your account has been deleted.');
+            onLogout(); // 自动登出并返回登录页
+        } catch (error: any) {
+            console.error('Delete account error:', error);
+            alert(error?.message || 'Failed to delete account. Please contact support.');
+        } finally {
+            setIsDeleting(false);
+        }
+    }
 
     return (
         <section className="bg-[var(--color-card)] border border-[var(--color-line)] rounded-xl p-6 shadow-sm">
@@ -65,14 +88,25 @@ export function SecuritySection({ onLogout, user }: SecuritySectionProps) {
 
                 <div className="h-px w-full bg-[var(--color-line)] my-2"></div>
 
-                <div className="flex justify-start">
+                {/* Logout & Danger Zone */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <button
                         onClick={onLogout}
-                        className="px-5 py-2.5 border border-[#ef4444] text-[#ef4444] rounded-lg font-medium hover:bg-[#ef4444] hover:text-white transition-colors"
+                        className="px-5 py-2.5 border border-[var(--color-line)] text-[var(--color-ink)] rounded-lg font-medium hover:bg-[var(--color-bg2)] transition-colors"
                     >
                         Logout
                     </button>
+
+                    {/* Delete Account 按钮 */}
+                    <button
+                        onClick={handleDeleteAccount}
+                        disabled={isDeleting}
+                        className="px-5 py-2.5 bg-red-600/10 border border-red-500/30 text-red-500 rounded-lg font-medium hover:bg-red-600 hover:text-white transition-all disabled:opacity-50"
+                    >
+                        {isDeleting ? 'Deleting...' : 'Delete Account'}
+                    </button>
                 </div>
+
             </div>
         </section>
     );

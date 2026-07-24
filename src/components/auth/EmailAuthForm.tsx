@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
@@ -6,14 +6,36 @@ export function EmailAuthForm() {
     const [searchParams, setSearchParams] = useSearchParams();
     const mode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
 
+    // 新增：控制两步走注册的步骤编号 (1 或 2)
+    const [step, setStep] = useState<number>(1);
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [sex, setSex] = useState('unspecified');
     const [phone, setPhone] = useState('');
-
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errorMsg, setErrorMsg] = useState('');
+    const [errorMsg, setErrorMsg] = useState<string>('');
+
+    // 每次在登录/注册模式之间切换时，重置步骤为 1 并清空报错
+    useEffect(() => {
+        setStep(1);
+        setErrorMsg('');
+    }, [mode]);
+
+    // 第一步点击“下一步”时的简单校验
+    const handleNextStep = () => {
+        setErrorMsg('');
+        if (!email.trim() || !password.trim()) {
+            setErrorMsg('Please enter both email and password.');
+            return;
+        }
+        if (password.length < 6) {
+            setErrorMsg('Password must be at least 6 characters.');
+            return;
+        }
+        setStep(2); // 进入第二步
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,12 +45,33 @@ export function EmailAuthForm() {
         try {
             if (mode === 'login') {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
+                if (error) {
+                    if (error.message.includes('Invalid login credentials')) {
+                        throw new Error('Incorrect email or password.');
+                    }
+                    throw error;
+                }
             } else {
-                // 💡 核心亮点：直接把表单字段传进 options.data
-                // 这样它们就会变成 sql 里的 new.raw_user_meta_data，被 Trigger 自动抓取写入 profiles！
+                // ==========================================
+                // 注册终极提交
+                // ==========================================
+                // 1. 预校验：检查邮箱是否存在
+                const { data: existingUser, error: checkError } = await supabase
+                    .from('profiles')
+                    .select('id, email')
+                    .eq('email', email.trim().toLowerCase())
+                    .maybeSingle();
+
+                if (checkError) {
+                    console.warn('Pre-check profiles error:', checkError);
+                }
+                if (existingUser) {
+                    throw new Error('This email is already registered. Please switch to Log In.');
+                }
+
+                // 2. 将个人基本信息全部塞进 metadata 传给后端触发器
                 const { error: authError } = await supabase.auth.signUp({
-                    email,
+                    email: email.trim().toLowerCase(),
                     password,
                     options: {
                         data: {
@@ -39,30 +82,92 @@ export function EmailAuthForm() {
                     }
                 });
 
-                if (authError) throw authError;
+                if (authError) {
+                    if (
+                        authError.message.includes('User already registered') ||
+                        authError.message.includes('already exists')
+                    ) {
+                        throw new Error('This email is already associated with an account.');
+                    }
+                    throw authError;
+                }
 
-                // 删掉了原本多余的 supabase.from('profiles').insert(...)
-                // 因为 SQL Trigger 已经在数据库底层瞬间帮我们完成了！
-
-                alert('注册成功！请检查邮箱进行验证，或直接登录。');
+                alert('Account created! Please check your email to verify your account, or log in directly.');
                 setSearchParams({ mode: 'login' });
             }
         } catch (err: any) {
-            setErrorMsg(err.message || '操作失败，请重试');
+            console.error('Auth error detail:', err);
+            let msg = 'An unexpected error occurred. Please try again.';
+
+            if (typeof err === 'string' && err !== '{}' && err.trim() !== '') {
+                msg = err;
+            } else if (err?.message && typeof err.message === 'string' && err.message !== '{}' && err.message.trim() !== '') {
+                msg = err.message;
+            } else if (err?.status === 429 || err?.code === 429 || err?.message === '{}') {
+                msg = 'Rate limit exceeded. Please wait a moment and try again with a different email.';
+            } else if (err?.error_description) {
+                msg = err.error_description;
+            }
+
+            setErrorMsg(msg);
+            // 如果在第二步提交出错，可以让用户继续留在第二步修改，无需跳回第一步
         } finally {
             setIsSubmitting(false);
         }
     };
+
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {errorMsg && (
-                <div className="p-3 bg-red-900/20 border border-red-500/40 text-red-400 text-sm rounded font-[family-name:var(--font-mono)]">
+                <div className="p-3 bg-red-900/20 border border-red-500/40 text-red-400 text-sm rounded font-[family-name:var(--font-mono)] animate-fade-in">
                     {errorMsg}
                 </div>
             )}
 
-            {mode === 'signup' && (
+            {/* ========================================== */}
+            {/*场景 A：登录模式 OR 注册的第一步 (填写邮箱+密码)*/}
+            {/* ========================================== */}
+            {(mode === 'login' || (mode === 'signup' && step === 1)) && (
                 <>
+                    <div>
+                        <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full p-2.5 bg-transparent border border-[var(--line)] rounded focus:outline-none focus:border-[var(--primary)] transition-colors font-[family-name:var(--font-mono)] text-sm text-[var(--ink)]"
+                            placeholder="reader@example.com"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full p-2.5 bg-transparent border border-[var(--line)] rounded focus:outline-none focus:border-[var(--primary)] transition-colors font-[family-name:var(--font-mono)] text-sm text-[var(--ink)]"
+                            placeholder="••••••••"
+                        />
+                    </div>
+                </>
+            )}
+
+            {/* ========================================== */}
+            {/*场景 B：注册的第二步 (填写个人资料)*/}
+            {/* ========================================== */}
+            {mode === 'signup' && step === 2 && (
+                <>
+                    <div className="text-xs font-[family-name:var(--font-mono)] text-[var(--primary)] mb-1">
+                        Step 2 of 2: Almost there! Tell us a bit about yourself.
+                    </div>
+
                     <div>
                         <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
                             Display Name
@@ -70,7 +175,6 @@ export function EmailAuthForm() {
                         <input
                             type="text"
                             value={displayName}
-                            // required
                             onChange={(e) => setDisplayName(e.target.value)}
                             className="w-full p-2.5 bg-transparent border border-[var(--line)] rounded focus:outline-none focus:border-[var(--primary)] transition-colors font-[family-name:var(--font-mono)] text-sm text-[var(--ink)]"
                             placeholder="e.g. Dreamer"
@@ -84,7 +188,6 @@ export function EmailAuthForm() {
                             </label>
                             <select
                                 value={sex}
-                                // required
                                 onChange={(e) => setSex(e.target.value)}
                                 className="w-full p-2.5 bg-[var(--card)] border border-[var(--line)] rounded focus:outline-none focus:border-[var(--primary)] transition-colors font-[family-name:var(--font-mono)] text-sm text-[var(--ink)]"
                             >
@@ -110,41 +213,48 @@ export function EmailAuthForm() {
                 </>
             )}
 
-            <div>
-                <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
-                    Email
-                </label>
-                <input
-                    type="email"
-                    // required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-2.5 bg-transparent border border-[var(--line)] rounded focus:outline-none focus:border-[var(--primary)] transition-colors font-[family-name:var(--font-mono)] text-sm text-[var(--ink)]"
-                    placeholder="reader@example.com"
-                />
-            </div>
-
-            <div>
-                <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
-                    Password
-                </label>
-                <input
-                    type="password"
-                    // required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-2.5 bg-transparent border border-[var(--line)] rounded focus:outline-none focus:border-[var(--primary)] transition-colors font-[family-name:var(--font-mono)] text-sm text-[var(--ink)]"
-                    placeholder="••••••••"
-                />
-            </div>
-
-            <button
-                type="submit"
-                disabled={isSubmitting}
-                className="mt-2 w-full p-3 bg-[var(--primary)] font-[family-name:var(--font-mono)] hover:opacity-90 disabled:opacity-50 text-white font-medium rounded transition-all duration-300 shadow-lg"
-            >
-                {isSubmitting ? 'Processing...' : mode === 'login' ? 'Enter Library' : 'Create Account'}
-            </button>
+            {/* ========================================== */}
+            {/*按钮逻辑区域 (根据步骤渲染不同的按钮)*/}
+            {/* ========================================== */}
+            {mode === 'signup' && step === 1 ? (
+                // 注册第一步：显示 "下一步" 按钮（不需要触发 form submit）
+                <button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="mt-2 w-full p-3 bg-[var(--primary)] font-[family-name:var(--font-mono)] hover:opacity-90 text-white font-medium rounded transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
+                >
+                    <span>Next: Profile Details</span>
+                    <span>➔</span>
+                </button>
+            ) : mode === 'signup' && step === 2 ? (
+                // 注册第二步：显示 "上一步" 和 "终极提交" 两个按钮
+                <div className="mt-2 flex gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setStep(1)}
+                        disabled={isSubmitting}
+                        className="w-1/3 p-3 border border-[var(--line)] font-[family-name:var(--font-mono)] hover:bg-[var(--line)]/20 disabled:opacity-50 text-[var(--ink)] font-medium rounded transition-all duration-200"
+                    >
+                        ⬅ Back
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-2/3 p-3 bg-[var(--primary)] font-[family-name:var(--font-mono)] hover:opacity-90 disabled:opacity-50 text-white font-medium rounded transition-all duration-300 shadow-lg"
+                    >
+                        {isSubmitting ? 'Creating...' : 'Create Account'}
+                    </button>
+                </div>
+            ) : (
+                // 默认登录模式：仅显示常规的 Enter Library 按钮
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="mt-2 w-full p-3 bg-[var(--primary)] font-[family-name:var(--font-mono)] hover:opacity-90 disabled:opacity-50 text-white font-medium rounded transition-all duration-300 shadow-lg"
+                >
+                    {isSubmitting ? 'Processing...' : 'Enter Library'}
+                </button>
+            )}
         </form>
     );
 }

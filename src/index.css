@@ -1,6 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900&family=Hanken+Grotesk:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Spectral:wght@400;500&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600&display=swap');
-
 
 @font-face {
     font-family: 'cinzel_decorativeregular';
@@ -52,7 +50,6 @@
         --font-display: 'Fraunces', Georgia, serif;
         --font-body: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'Georgia', 'Times New Roman', 'carattereregular', serif;
         --font-mono: 'cookieregular', sans-serif;
-        /* ✨ 新增：优雅花体 / 衬线体变量 */
         --font-serif-fancy: 'cormorant_garamondlight', Georgia, serif;
         --font-decorative: 'cinzel_decorativeregular', serif;
         --font-italic-fancy: 'playfair_displayregular', serif;
