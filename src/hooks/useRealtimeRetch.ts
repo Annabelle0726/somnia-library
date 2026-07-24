@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
-import { useQueryClient, type QueryKey } from '@tanstack/react-query'
-import { supabase } from '../lib/supabase'
+import {useEffect} from 'react'
+import {useQueryClient, type QueryKey} from '@tanstack/react-query'
+import {supabase} from '../lib/supabase'
 
 export function useRealtimeRefetch(
     // 在 React 中，数组和对象每次渲染时内存地址都不同，这会导致 useEffect 频繁、错误地重复执行。
@@ -22,12 +22,12 @@ export function useRealtimeRefetch(
                 'postgres_changes',
                 // 绑定监听事件：
                 // 代码遍历你传入的表（table），只要这些表发生任何变化（event: '*'，代表新增、修改、删除），就会触发回调函数
-                { event: '*', schema: 'public', table: s.table, ...(s.filter ? { filter: s.filter } : {}) },
+                {event: '*', schema: 'public', table: s.table, ...(s.filter ? {filter: s.filter} : {})},
                 () => {
                     // 让本地缓存失效（Refetch）：
                     // 当监听到数据库变动时，它会执行 qc.invalidateQueries({ queryKey: k })
                     // React Query 收到这个指令后，会立刻向后端重新拉取最新的数据，网页上的 UI 就会“无刷实时更新”
-                    for (const k of JSON.parse(keysId) as QueryKey[]) void qc.invalidateQueries({ queryKey: k })
+                    for (const k of JSON.parse(keysId) as QueryKey[]) void qc.invalidateQueries({queryKey: k})
                 },
             )
         }
