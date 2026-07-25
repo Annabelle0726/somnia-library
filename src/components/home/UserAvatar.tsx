@@ -48,7 +48,7 @@ export function UserAvatar() {
         >
             {avatarUrl ? (
                 <img
-                    src={avatarUrl}
+                    src={avatarUrl} referrerPolicy="no-referrer"
                     alt="User Avatar"
                     className="w-full h-full object-cover"
                 />

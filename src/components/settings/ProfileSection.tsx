@@ -143,7 +143,7 @@ export function ProfileSection({user}: ProfileSectionProps) {
                     <div
                         className="relative w-20 h-20 rounded-full overflow-hidden bg-[var(--color-bg2)] border-2 border-[var(--color-line)] flex items-center justify-center shrink-0 shadow-inner">
                         {avatarUrl ? (
-                            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover"/>
+                            <img src={avatarUrl} alt="Avatar" referrerPolicy="no-referrer" className="w-full h-full object-cover"/>
                         ) : (
                             // 默认头像图标
                             <svg className="w-10 h-10 text-[var(--color-muted)]" fill="currentColor"
