@@ -21,7 +21,7 @@ export function HomeHeader() {
 
                         {/* 右侧：Floating Clock */}
                         <FloatingClock />
-                                            </div>
+                    </div>
 
                     {/* Row 2: 左侧（大标题 + 嵌入式印章副标题） | 右侧（Reading Stats） */}
                     <div className="flex flex-wrap items-center justify-between w-full gap-3 mt-0.5">
@@ -34,8 +34,8 @@ export function HomeHeader() {
 
                             {/* 把 Chronicle Chamber 做成精致的附注标记，不单独占一行 */}
                             <div className="flex items-center gap-1.5 mt-1.5 opacity-80 transition-transform duration-500 group-hover:translate-x-1">
-                                <div className="w-2.5 sm:w-4 h-[1px] bg-tertiary/60"></div>
-                                <span className="text-[8px] sm:text-[10px] text-tertiary font-bold tracking-[0.25em] font-[family-name:var(--font-decorative)] uppercase whitespace-nowrap">
+                                <div className="w-2.5 sm:w-4 h-[1px] bg-secondary/60"></div>
+                                <span className="text-[8px] sm:text-[10px] text-secondary font-bold tracking-[0.25em] font-[family-name:var(--font-decorative)] uppercase whitespace-nowrap">
                                     The Chronicle Chamber
                                 </span>
                             </div>
