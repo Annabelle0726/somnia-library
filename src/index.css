@@ -97,7 +97,7 @@
           ============================================================
         */
 
-    /* ---------------- 1. NOCTURNE (暗黑深渊) ---------------- */
+    /* ---------------- 1. NOCTURNE (暗黑深渊 - 保持不变) ---------------- */
     /* Light Mode */
     :root[data-skin="nocturne"][data-mode="light"] {
         --bg: #f8f5fa;
@@ -131,75 +131,75 @@
         --shadow: rgba(0, 0, 0, 0.5);
     }
 
-    /* ---------------- 2. MAGNOLIA (白昼木兰) ---------------- */
+    /* ---------------- 2. MAGNOLIA (白昼木兰 - 重构：抹茶绿与象牙白) ---------------- */
     /* Light Mode (默认) */
     :root[data-skin="magnolia"], :root[data-skin="magnolia"][data-mode="light"] {
-        --bg: #faf9f6;
-        --bg2: #f0ede9;
-        --card: rgba(255, 255, 255, 0.6);
-        --card-2: #e3deda;
-        --ink: #2a1a2e;
-        --muted: #736b7a;
-        --line: rgba(200, 45, 90, 0.15);
-        --primary: #c82d5a;
-        --primary-solid: #a32247;
+        --bg: #f7f9f5;
+        --bg2: #eaf0e6;
+        --card: rgba(255, 255, 255, 0.85);
+        --card-2: #dce5d6;
+        --ink: #19261a;
+        --muted: #5e7360;
+        --line: rgba(46, 125, 50, 0.18);
+        --primary: #2e7d32;
+        --primary-solid: #1b5e20;
         --on-primary: #ffffff;
-        --secondary: #64328c;
-        --tertiary: #c88228;
-        --shadow: rgba(0, 0, 0, 0.05);
+        --secondary: #00796b;
+        --tertiary: #d97706;
+        --shadow: rgba(25, 38, 26, 0.06);
     }
     /* Dark Mode */
     :root[data-skin="magnolia"][data-mode="dark"] {
-        --bg: #161019;
-        --bg2: #211826;
-        --card: rgba(43, 31, 49, 0.6);
-        --card-2: #302237;
-        --ink: #f2eaf5;
-        --muted: #a092a8;
-        --line: rgba(232, 77, 122, 0.2);
-        --primary: #e84d7a;
-        --primary-solid: #c82d5a;
-        --on-primary: #ffffff;
-        --secondary: #9754cc;
-        --tertiary: #e69d43;
-        --shadow: rgba(0, 0, 0, 0.45);
+        --bg: #0f1712;
+        --bg2: #16241b;
+        --card: rgba(22, 38, 27, 0.6);
+        --card-2: #223a2a;
+        --ink: #e8f5e9;
+        --muted: #81c784;
+        --line: rgba(74, 222, 128, 0.2);
+        --primary: #4ade80;
+        --primary-solid: #22c55e;
+        --on-primary: #052e16;
+        --secondary: #2dd4bf;
+        --tertiary: #fbbf24;
+        --shadow: rgba(0, 0, 0, 0.5);
     }
 
-    /* ---------------- 3. GLOAMING (暮色黄昏) ---------------- */
+    /* ---------------- 3. GLOAMING (暮色黄昏 - 重构：夜空蓝与落日金) ---------------- */
     /* Light Mode */
     :root[data-skin="gloaming"][data-mode="light"] {
-        --bg: #f4f4f8;
-        --bg2: #e6e6f0;
-        --card: rgba(255, 255, 255, 0.8);
-        --card-2: #dbdbe8;
-        --ink: #1c1d2e;
-        --muted: #626480;
-        --line: rgba(156, 67, 96, 0.18);
-        --primary: #9c4360;
-        --primary-solid: #80334c;
+        --bg: #f0f4f8;
+        --bg2: #e1e9f2;
+        --card: rgba(255, 255, 255, 0.85);
+        --card-2: #cee0f2;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: rgba(29, 78, 216, 0.18);
+        --primary: #1d4ed8;
+        --primary-solid: #1e40af;
         --on-primary: #ffffff;
-        --secondary: #4a3e73;
-        --tertiary: #b07a48;
-        --shadow: rgba(28, 29, 46, 0.08);
+        --secondary: #0284c7;
+        --tertiary: #d97706;
+        --shadow: rgba(15, 23, 42, 0.08);
     }
     /* Dark Mode (默认) */
     :root[data-skin="gloaming"], :root[data-skin="gloaming"][data-mode="dark"] {
-        --bg: #1a1b2e;
-        --bg2: #212236;
-        --card: rgba(42, 43, 66, 0.6);
-        --card-2: #31334c;
-        --ink: #e2e2ee;
-        --muted: #8a8ca8;
-        --line: rgba(184, 92, 122, 0.2);
-        --primary: #b85c7a;
-        --primary-solid: #9c4b65;
-        --on-primary: #ffffff;
-        --secondary: #5c4d8c;
-        --tertiary: #d4a373;
-        --shadow: rgba(0, 0, 0, 0.4);
+        --bg: #0b1329;
+        --bg2: #121e3d;
+        --card: rgba(24, 38, 71, 0.6);
+        --card-2: #20335e;
+        --ink: #e0f2fe;
+        --muted: #7dd3fc;
+        --line: rgba(245, 158, 11, 0.25);
+        --primary: #f59e0b;
+        --primary-solid: #d97706;
+        --on-primary: #1e1000;
+        --secondary: #38bdf8;
+        --tertiary: #f43f5e;
+        --shadow: rgba(0, 0, 0, 0.55);
     }
 
-    /* ---------------- 4. REVERIE (哥特夜架) ---------------- */
+    /* ---------------- 4. REVERIE (哥特夜架 - 保持不变) ---------------- */
     /* Light Mode (默认) */
     :root[data-skin="reverie"], :root[data-skin="reverie"][data-mode="light"] {
         --bg: #fbeee9;
@@ -232,7 +232,6 @@
         --tertiary: #e09843;
         --shadow: rgba(0, 0, 0, 0.5);
     }
-
     /* ---------------- 5. GRIMOIRE (羊皮卷宗) ---------------- */
     /* Light Mode */
     :root[data-skin="grimoire"][data-mode="light"] {
@@ -300,4 +299,5 @@
         --tertiary: #b9c7e0;
         --shadow: rgba(0, 0, 0, 0.6);
     }
+
 }

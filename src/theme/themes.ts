@@ -36,35 +36,35 @@ export const THEMES: ThemeItem[] = [
     {
         id: 'magnolia',
         name: 'Magnolia',
-        description: 'Crisp, floral light mode with a touch of rose.',
+        description: 'Fresh matcha green and botanical ivory.',
         light: {
-            bg: '#faf9f6',
-            text: '#2a1a2e',
-            primary: '#c82d5a',
-            swatches: ['#faf9f6', '#f0ede9', '#e3deda', '#c82d5a', '#64328c'],
+            bg: '#f7f9f5',
+            text: '#19261a',
+            primary: '#2e7d32',
+            swatches: ['#f7f9f5', '#eaf0e6', '#dce5d6', '#2e7d32', '#00796b'],
         },
         dark: {
-            bg: '#161019',
-            text: '#f2eaf5',
-            primary: '#e84d7a',
-            swatches: ['#161019', '#211826', '#302237', '#e84d7a', '#9754cc'],
+            bg: '#0f1712',
+            text: '#e8f5e9',
+            primary: '#4ade80',
+            swatches: ['#0f1712', '#16241b', '#223a2a', '#4ade80', '#2dd4bf'],
         }
     },
     {
         id: 'gloaming',
         name: 'Gloaming',
-        description: 'The soft, purple fade of twilight.',
+        description: 'Midnight navy with a warm amber twilight.',
         light: {
-            bg: '#f4f4f8',
-            text: '#1c1d2e',
-            primary: '#9c4360',
-            swatches: ['#f4f4f8', '#e6e6f0', '#dbdbe8', '#9c4360', '#4a3e73'],
+            bg: '#f0f4f8',
+            text: '#0f172a',
+            primary: '#1d4ed8',
+            swatches: ['#f0f4f8', '#e1e9f2', '#cee0f2', '#1d4ed8', '#0284c7'],
         },
         dark: {
-            bg: '#1a1b2e',
-            text: '#e2e2ee',
-            primary: '#b85c7a',
-            swatches: ['#1a1b2e', '#212236', '#31334c', '#b85c7a', '#5c4d8c'],
+            bg: '#0b1329',
+            text: '#e0f2fe',
+            primary: '#f59e0b',
+            swatches: ['#0b1329', '#121e3d', '#20335e', '#f59e0b', '#38bdf8'],
         }
     },
     {
