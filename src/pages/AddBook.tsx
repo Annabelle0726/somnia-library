@@ -6,8 +6,8 @@ export function AddBook() {
     const navigate = useNavigate();
 
     return (
-        <div className="w-full max-w-3xl mx-auto px-4 sm:px-8 py-8 space-y-6">
-            {/* Header */}
+        <div className="flex flex-col gap-8 w-full">
+        {/* Header */}
             <div className="bg-card/40 border border-line/60 rounded-2xl p-6 backdrop-blur-md">
                 <div className="flex items-center gap-3">
                     <span className="text-3xl">🖋️</span>

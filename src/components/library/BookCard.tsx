@@ -1,6 +1,6 @@
 // src/components/library/BookCard.tsx
-import React, { useState } from 'react';
-import type { BookWithUserData } from '../../types/book';
+import React, { useState, useEffect } from 'react';
+import type { BookWithUserData, UserFavorite } from '../../types/book';
 import { useAuth } from '../../auth/useAuth';
 import { supabase } from '../../lib/supabase';
 
@@ -15,6 +15,10 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
     const [isFave, setIsFave] = useState<boolean>(!!book.is_fave);
     const [favLoading, setFavLoading] = useState<boolean>(false);
 
+    useEffect(() => {
+        setIsFave(!!book.is_fave);
+    }, [book.is_fave]);
+
     // 处理小心心收藏切换 (同步更新 user_favorites 表)
     const handleToggleFavorite = async (e: React.MouseEvent) => {
         e.stopPropagation(); // 阻止触发卡片本身的点击/编辑事件
@@ -26,11 +30,11 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
 
         try {
             if (nextFaveState) {
-                // 添加收藏
-                await supabase.from('user_favorites').insert({
+                const favRecord: Pick<UserFavorite, 'user_id' | 'book_id'> = {
                     user_id: user.id,
                     book_id: book.id,
-                });
+                };
+                await supabase.from('user_favorites').insert(favRecord);
             } else {
                 // 取消收藏
                 await supabase
@@ -53,7 +57,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
             onClick={() => onEdit?.(book)}
             className="group flex flex-col cursor-pointer transition-transform duration-300"
         >
-            {/* 1. 封面大框 (2:3 标准大屏比例，大圆角与柔和阴影) */}
+            {/* 1. 封面大框 (2:3 标准大屏比例) */}
             <div className="relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-bg2 border border-line/40 shadow-sm group-hover:shadow-2xl transition-all duration-300">
                 {book.cover ? (
                     <img
@@ -96,7 +100,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
                     </svg>
                 </button>
 
-                {/* 左上角：阅读状态小药丸（简洁浮层） */}
+                {/* 左上角：阅读状态小药丸（显式关联 user_status） */}
                 {book.user_status && (
                     <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-black/60 text-white/90 border border-white/20 backdrop-blur-md font-[family-name:var(--font-mono)]">
                         {book.user_status.replace(/_/g, ' ')}
@@ -119,7 +123,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
                 </div>
             </div>
 
-            {/* 2. 信息区域（大气简洁，参考现代图书 App 风格） */}
+            {/* 2. 信息区域 */}
             <div className="mt-3 px-1 space-y-1">
                 <h4
                     className="text-base font-bold text-ink line-clamp-1 group-hover:text-primary transition-colors font-display tracking-tight"

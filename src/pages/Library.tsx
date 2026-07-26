@@ -82,7 +82,8 @@ export function Library() {
                 b.title?.toLowerCase().includes(q) ||
                 b.author?.toLowerCase().includes(q) ||
                 b.series?.toLowerCase().includes(q) ||
-                b.subgenre?.toLowerCase().includes(q)
+                b.subgenre?.toLowerCase().includes(q) ||
+                b.isbn?.toLowerCase().includes(q)
         );
     }, [books, searchQuery]);
 
@@ -120,7 +121,7 @@ export function Library() {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Title, author, tropes..."
+                            placeholder="Title, Author, ISBN..."
                             className="w-full pl-10 pr-8 py-2.5 bg-bg2/90 border border-line rounded-2xl text-xs sm:text-sm text-ink placeholder:text-muted/60 focus:outline-none focus:border-tertiary transition-all shadow-inner"
                         />
                         {searchQuery && (
