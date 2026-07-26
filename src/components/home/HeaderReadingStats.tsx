@@ -12,7 +12,7 @@ export function HeaderReadingStats() {
     const { user } = useAuth();
     const [streakDays, setStreakDays] = useState<number>(0);
     const [currentBook, setCurrentBook] = useState<CurrentReadData>({
-        title: 'Dormant Pages', // 换成文邹邹且贴合“阅读”的诗意文案
+        title: 'Dormant Pages',
         progress: 0,
     });
     const [loading, setLoading] = useState<boolean>(true);
@@ -25,22 +25,27 @@ export function HeaderReadingStats() {
             }
 
             try {
-                // 1. 查询当前在读的书籍 (read_status = 'Reading')
-                const { data: booksData, error: booksError } = await supabase
-                    .from('books')
-                    .select('title, progress')
-                    .eq('owner_id', user.id)
-                    .eq('read_status', 'Reading')
+                // 1. 查询当前在读的书籍：连表查询 public.books 获取 title
+                const { data: statusData, error: statusError } = await supabase
+                    .from('user_book_status')
+                    .select('progress, books(title)')
+                    .eq('user_id', user.id)
+                    .eq('status', 'reading') // 对应建表时的 'reading' 小写约束
                     .order('updated_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
 
-                if (booksError) {
-                    console.error('Error fetching current read:', booksError);
-                } else if (booksData) {
+                if (statusError) {
+                    console.error('Error fetching current read status:', statusError);
+                } else if (statusData) {
+                    // Supabase 返回的连表对象解构：books 是一个对象 (或者单项数组)
+                    const bookInfo = Array.isArray(statusData.books)
+                        ? statusData.books[0]
+                        : statusData.books;
+
                     setCurrentBook({
-                        title: booksData.title || 'Dormant Pages',
-                        progress: booksData.progress ?? 0,
+                        title: bookInfo?.title || 'Dormant Pages',
+                        progress: statusData.progress ?? 0,
                     });
                 } else {
                     setCurrentBook({
@@ -88,7 +93,7 @@ export function HeaderReadingStats() {
 
     return (
         <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* 1. Reading Streak (固定高度 h-[38px] sm:h-[42px] 实现严格对称) */}
+            {/* 1. Reading Streak */}
             <div className="flex items-center gap-1.5 px-2.5 sm:px-3 h-[38px] sm:h-[42px] bg-card/80 border border-line rounded-xl shadow-sm backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:border-tertiary/40">
                 {renderFlame()}
                 <div className="flex flex-col justify-center">
@@ -101,7 +106,7 @@ export function HeaderReadingStats() {
                 </div>
             </div>
 
-            {/* 2. Current Reading (同样固定高度 h-[38px] sm:h-[42px] 实现严格对称) */}
+            {/* 2. Current Reading */}
             <div className="flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 h-[38px] sm:h-[42px] bg-card/80 border border-line rounded-xl shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-tertiary/40 max-w-[150px] sm:max-w-[200px]">
                 {/* 状态指示灯 */}
                 <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${currentBook.progress > 0 ? 'bg-primary animate-pulse' : 'bg-muted/40'}`}></div>
@@ -119,7 +124,7 @@ export function HeaderReadingStats() {
                         {loading ? '...' : currentBook.title}
                     </span>
 
-                    {/* 仅在进度 > 0% 时，才渲染进度条！ */}
+                    {/* 仅在进度 > 0 时，渲染进度条 */}
                     {currentBook.progress > 0 && (
                         <div className="w-full bg-bg2 rounded-full h-1 mt-1 overflow-hidden border border-line/40">
                             <div

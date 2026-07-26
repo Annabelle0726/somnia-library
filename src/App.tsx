@@ -1,12 +1,12 @@
 import './App.css'
 import {HashRouter, Routes, Route} from "react-router-dom";
-import {ThemeProvider} from './theme/ThemeContext';
+import {ThemeProvider} from './hooks/ThemeContext.tsx';
 import {AuthProvider} from './auth/AuthProvider';
 
 // 内部页面
 import {Layout} from './components/layout/Layout';
 import Home from './pages/Home';
-import Library from './pages/Library';
+import {Library} from './pages/Library';
 import Shelves from './pages/Shelves';
 import Match from './pages/Match';
 import Discover from './pages/Discover';
@@ -15,7 +15,7 @@ import Planner from "./pages/Planner.tsx";
 import Stats from "./pages/Stats.tsx";
 import {AddBook} from "./pages/AddBook.tsx";
 import {Settings} from "./pages/Settings.tsx";
-import {ProtectedRoute} from './components/ProtectedRoute';
+import {ProtectedRoute} from './components/layout/ProtectedRoute.tsx';
 
 import Clubs from "./pages/Clubs.tsx";
 // 外部页面 (新建这些文件)

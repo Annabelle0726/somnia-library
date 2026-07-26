@@ -91,6 +91,9 @@
         --font-body: var(--font-body), system-ui, sans-serif;
         --font-mono: var(--font-mono), ui-monospace, monospace;
     }
+
+
+
     /*
           ============================================================
           3. 皮肤 Token 契约层 (6 套皮肤 × 2 种模式 = 12 套配色)
@@ -300,4 +303,13 @@
         --shadow: rgba(0, 0, 0, 0.6);
     }
 
+}
+
+.hero-title {
+    /* clamp(最小值, 响应式缩放值, 最大值) */
+    font-size: clamp(1.72rem, 4vw, 2.7rem) !important;
+    line-height: 1.15;
+    letter-spacing: -0.02em; /* 稍微收紧紧凑度 */
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
 }
