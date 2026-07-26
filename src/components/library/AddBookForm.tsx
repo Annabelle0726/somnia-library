@@ -17,7 +17,9 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
 
-    // --- 图书公共元数据 (存入 books 表) ---
+    // --- 图书公共元数据 ---
+    const [isbn, setIsbn] = useState('');
+    const [fetchingIsbn, setFetchingIsbn] = useState(false);
     const [title, setTitle] = useState(initialTitle);
     const [author, setAuthor] = useState('');
     const [series, setSeries] = useState('');
@@ -28,9 +30,131 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
     const [spice, setSpice] = useState('0');
     const [tropesInput, setTropesInput] = useState('');
 
-    // --- 用户个人交互数据 (分别存入 user_books & user_favorites 表) ---
+    // --- 用户个人交互数据 ---
     const [readStatus, setReadStatus] = useState<ReadingStatus | 'unread'>('unread');
     const [fave, setFave] = useState(false);
+
+    // ⚡ 1. 前端纯数学校验 ISBN 合法性 (支持 ISBN-10 和 ISBN-13)
+    const isValidIsbn = (rawIsbn: string): boolean => {
+        // 只保留数字和字母 X（忽略大小写，最后统一大写）
+        const clean = rawIsbn.replace(/[^0-9X]/gi, '').toUpperCase();
+
+        if (clean.length === 10) {
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                // 前 9 位必须全是数字
+                if (!/^\d$/.test(clean[i])) return false;
+                sum += (10 - i) * parseInt(clean[i], 10);
+            }
+            const lastChar = clean[9];
+            // 最后一位可以是数字或 X
+            if (lastChar !== 'X' && !/^\d$/.test(lastChar)) return false;
+            sum += lastChar === 'X' ? 10 : parseInt(lastChar, 10);
+            return sum % 11 === 0;
+        } else if (clean.length === 13) {
+            if (!/^\d{13}$/.test(clean)) return false;
+            let sum = 0;
+            for (let i = 0; i < 12; i++) {
+                sum += parseInt(clean[i], 10) * (i % 2 === 0 ? 1 : 3);
+            }
+            const checkDigit = (10 - (sum % 10)) % 10;
+            return checkDigit === parseInt(clean[12], 10);
+        }
+        return false;
+    };
+
+    // ⚡ 2. 调用 Open Library API 一键获取书籍详情并自动填充
+    const handleFetchByIsbn = async () => {
+        // 清洗用户输入，只保留数字和 X
+        const cleanIsbn = isbn.replace(/[^0-9X]/gi, '').toUpperCase();
+
+        if (!cleanIsbn) {
+            setErrorMsg('Please enter an ISBN first.');
+            return;
+        }
+        if (!isValidIsbn(cleanIsbn)) {
+            setErrorMsg('Invalid ISBN format or check digit.');
+            return;
+        }
+
+        setFetchingIsbn(true);
+        setErrorMsg('');
+
+        try {
+            // 使用 Open Library API（免费、无限制、无需 API Key）
+            const response = await fetch(`https://openlibrary.org/isbn/${cleanIsbn}.json`);
+
+            if (!response.ok) {
+                setErrorMsg('No book metadata found for this ISBN online, but you can still enter details manually.');
+                setFetchingIsbn(false);
+                return;
+            }
+
+            const info = await response.json();
+
+            // 填充书名
+            if (info.title) {
+                setTitle(info.title);
+            }
+
+            // 填充作者（Open Library 返回的是 author key 数组，需要逐个获取姓名）
+            if (info.authors && info.authors.length > 0) {
+                try {
+                    const authorNames = await Promise.all(
+                        info.authors.slice(0, 5).map(async (authorObj: any) => {
+                            // 如果作者信息已经是字符串，直接返回
+                            if (typeof authorObj === 'string') return authorObj;
+                            // 通过 author key 获取作者详情
+                            const authorKey = authorObj.key;
+                            const authorRes = await fetch(`https://openlibrary.org${authorKey}.json`);
+                            if (!authorRes.ok) return 'Unknown Author';
+                            const authorData = await authorRes.json();
+                            return authorData.name || authorData.personal_name || 'Unknown Author';
+                        })
+                    );
+                    setAuthor(authorNames.join(', '));
+                } catch (authorErr) {
+                    console.error('Failed to fetch author details:', authorErr);
+                    // 如果获取作者失败，至少尝试从 author key 中提取
+                    const fallbackNames = info.authors.map((a: any) =>
+                        typeof a === 'string' ? a : (a.key || 'Unknown Author')
+                    );
+                    setAuthor(fallbackNames.join(', '));
+                }
+            }
+
+            // 填充封面图（Open Library 提供多种尺寸的封面）
+            if (info.covers && info.covers.length > 0) {
+                // -L 是大图，-M 是中图，-S 是小图
+                const coverUrl = `https://covers.openlibrary.org/b/id/${info.covers[0]}-L.jpg`;
+                setCover(coverUrl);
+            }
+
+            // 可选：填充其他信息
+            if (info.series && info.series.length > 0) {
+                // Open Library 有时会返回丛书信息
+                setSeries(info.series[0] || '');
+            }
+
+            if (info.subjects && info.subjects.length > 0) {
+                // 可以根据主题自动判断流派
+                const subjects = info.subjects.map((s: string) => s.toLowerCase());
+                if (subjects.some((s: string | string[]) => s.includes('fantasy'))) {
+                    setSubgenre('High Fantasy');
+                } else if (subjects.some((s: string | string[]) => s.includes('romance'))) {
+                    setSubgenre('Dark Romance');
+                } else if (subjects.some((s: string | string[]) => s.includes('science fiction'))) {
+                    setSubgenre('Sci-Fi');
+                }
+            }
+
+        } catch (err) {
+            console.error('Failed to fetch ISBN data:', err);
+            setErrorMsg('Failed to connect to book database. Please fill manually.');
+        } finally {
+            setFetchingIsbn(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,25 +163,31 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
             return;
         }
 
+        // 提交前可选：校验用户随意输入的 ISBN 是否属于乱填
+        const cleanIsbn = isbn.replace(/[^0-9X]/gi, '').toUpperCase();
+        if (cleanIsbn && !isValidIsbn(cleanIsbn)) {
+            setErrorMsg('The ISBN entered appears to be invalid. Please check or leave it blank.');
+            return;
+        }
+
         setLoading(true);
         setErrorMsg('');
 
         try {
-            // 获取当前操作的用户
             const { data: { user }, error: authError } = await supabase.auth.getUser();
             if (authError || !user) {
                 throw new Error('You must be logged in to add a book.');
             }
 
-            // 解析 Tropes (最多保留 5 个)
             const tropeArray = tropesInput
                 .split(',')
                 .map((t) => t.trim())
                 .filter(Boolean)
                 .slice(0, 5);
 
-            // 1️⃣ 构建 books 表的数据载荷 (纯粹的书籍信息)
+            // 1️⃣ 构建 books 表的数据载荷
             const bookPayload = {
+                isbn: cleanIsbn || null,
                 title: title.trim(),
                 author: author.trim(),
                 series: series.trim() || null,
@@ -66,7 +196,6 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
                 cover: cover.trim() || null,
                 rating: parseFloat(rating) || null,
                 spice: parseInt(spice, 10) || null,
-                // 对齐现有的 5 列 trope 字段
                 tropes_0: tropeArray[0] || null,
                 tropes_1: tropeArray[1] || null,
                 tropes_2: tropeArray[2] || null,
@@ -74,7 +203,6 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
                 tropes_4: tropeArray[4] || null,
             };
 
-            // 插入 books 并直接返回新添加书籍的 ID !
             const { data: newBook, error: bookError } = await supabase
                 .from('books')
                 .insert([bookPayload])
@@ -82,43 +210,23 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
                 .single();
 
             if (bookError || !newBook) {
-                throw bookError
-                // || new BookError('Failed to retrieve newly added book ID.');
+                throw bookError || new Error('Failed to retrieve newly added book ID.');
             }
 
             const newBookId = newBook.id;
 
-            // 2️⃣ 如果勾选了 Favorite，异步向 user_favorites 表存入关系
+            // 2️⃣ 存储红心与阅读状态
             if (fave) {
-                const { error: faveError } = await supabase
-                    .from('user_favorites')
-                    .insert({
-                        user_id: user.id,
-                        book_id: newBookId,
-                    });
-                if (faveError) {
-                    console.error('Warning: Failed to add to favorites:', faveError);
-                }
+                await supabase.from('user_favorites').insert({ user_id: user.id, book_id: newBookId });
             }
-
-            // 3️⃣ 如果选择了具体的阅读状态 (非 unread)，异步向 user_books 表更新状态
             if (readStatus && readStatus !== 'unread') {
-                const { error: statusError } = await supabase
-                    .from('user_books')
-                    .insert({
-                        user_id: user.id,
-                        book_id: newBookId,
-                        status: readStatus,
-                    });
-                if (statusError) {
-                    console.error('Warning: Failed to update read status:', statusError);
-                }
+                await supabase.from('user_books').insert({ user_id: user.id, book_id: newBookId, status: readStatus });
             }
 
-            // --- 成功回调与清理 ---
             if (onSuccess) {
                 onSuccess();
             } else {
+                setIsbn('');
                 setTitle('');
                 setAuthor('');
                 setCover('');
@@ -133,16 +241,44 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
     };
 
     return (
-        /* 考虑到 Sidebar 占据了屏幕左侧，整个表单采用轻量级两列布局，增加元素内边距 */
-        <form onSubmit={handleSubmit} className="
-        flex flex-col gap-8 w-full">
+        <form onSubmit={handleSubmit} className="space-y-6 text-left max-w-2xl mx-auto p-1 font-sans">
             {errorMsg && (
                 <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-400 text-xs font-medium">
                     ⚠️ {errorMsg}
                 </div>
             )}
 
-            {/* Title & Author (核心高频区域：在手机为单列，电脑为两列) */}
+            {/* ISBN 与一键联网填充区域 */}
+            <div className="p-4 bg-bg2/60 border border-line rounded-2xl space-y-2">
+                <label className="text-xs font-bold text-ink uppercase tracking-wider flex items-center justify-between font-[family-name:var(--font-mono)]">
+                    <span>ISBN-10 / ISBN-13 (Optional)</span>
+                    <span className="text-[10px] text-tertiary font-normal">Auto-fill book details!</span>
+                </label>
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={isbn}
+                        onChange={(e) => setIsbn(e.target.value)}
+                        placeholder="e.g. 9781649374042"
+                        className="flex-1 px-3.5 py-2 bg-card border border-line rounded-xl text-sm text-ink placeholder:text-muted/50 focus:outline-none focus:border-tertiary transition-colors shadow-inner font-[family-name:var(--font-mono)]"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleFetchByIsbn}
+                        disabled={fetchingIsbn || !isbn.trim()}
+                        className="px-4 py-2 bg-tertiary/20 text-tertiary border border-tertiary/40 font-bold text-xs rounded-xl hover:bg-tertiary hover:text-on-primary disabled:opacity-40 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                        title="Fetch Title, Author, and Cover by ISBN"
+                    >
+                        {fetchingIsbn ? (
+                            <div className="w-3.5 h-3.5 border-2 border-tertiary border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <span>⚡ Fetch Info</span>
+                        )}
+                    </button>
+                </div>
+            </div>
+
+            {/* Title & Author */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 <div className="space-y-1.5">
                     <label className="text-xs font-bold text-ink uppercase tracking-wider font-[family-name:var(--font-mono)]">
@@ -233,7 +369,7 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
                 </div>
             </div>
 
-            {/* 评分 & 辣度 (客观属性) */}
+            {/* 评分 & 辣度 */}
             <div className="grid grid-cols-2 gap-4 sm:gap-5 p-4 bg-card/40 border border-line/40 rounded-2xl">
                 <div className="space-y-1.5">
                     <label className="text-xs font-bold text-amber-400 flex items-center gap-1 font-[family-name:var(--font-mono)]">
@@ -284,7 +420,7 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
                 />
             </div>
 
-            {/* --- 个人归档设定区 (区分从公共库数据中抽离，高亮显眼) --- */}
+            {/* 个人归档设定区 */}
             <div className="pt-2">
                 <div className="p-4 rounded-2xl bg-gradient-to-r from-tertiary/10 via-card to-card border border-tertiary/30 space-y-4">
                     <div className="text-xs font-bold text-tertiary uppercase tracking-wider font-[family-name:var(--font-mono)]">
@@ -292,7 +428,6 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-                        {/* 阅读进度 */}
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-muted">Reading Status</label>
                             <select
@@ -308,7 +443,6 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
                             </select>
                         </div>
 
-                        {/* 是否点红心 */}
                         <div className="flex items-center sm:justify-end pt-2 sm:pt-4">
                             <label className="flex items-center gap-2.5 cursor-pointer bg-bg2/80 border border-line hover:border-rose-500/50 px-4 py-2 rounded-xl transition-all select-none group">
                                 <input
@@ -326,7 +460,7 @@ export const AddBookForm: React.FC<AddBookFormProps> = ({
                 </div>
             </div>
 
-            {/* 提交与取消按钮 (留出足够的底部外边距防止被手机下方安全区遮挡) */}
+            {/* 按钮控制组 */}
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-line/60">
                 {onCancel && (
                     <button
