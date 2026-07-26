@@ -1,4 +1,4 @@
-// C:\Projects\somnia-library\src\theme\ThemeContext.tsx
+// src/theme/ThemeContext.tsx
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 // 1. 导出 6 套 Skin 皮肤名称 与 3 种 Mode 明暗模式的类型声明

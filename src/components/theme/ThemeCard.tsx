@@ -1,6 +1,6 @@
 // src/components/theme/ThemeCard.tsx
 import React from 'react';
-import type { ThemeItem } from '../../theme/themes';
+import type { ThemeItem } from '../../types/themes.ts';
 
 interface ThemeCardProps {
     theme: ThemeItem;

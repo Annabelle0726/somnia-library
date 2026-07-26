@@ -1,7 +1,7 @@
 // src/pages/theme.tsx
 import { useState, useEffect } from 'react';
-import { useTheme, type ThemeSkin, type ThemeMode } from '../theme/ThemeContext';
-import { THEMES } from '../theme/themes';
+import { useTheme, type ThemeSkin, type ThemeMode } from '../hooks/ThemeContext.tsx';
+import { THEMES } from '../types/themes.ts';
 import { ThemeCard } from '../components/theme/ThemeCard';
 
 export default function ThemePage() {
@@ -37,7 +37,8 @@ export default function ThemePage() {
     return (
         <div className="flex flex-col gap-8 w-full">
             <div className="max-w-3xl">
-                <h1 className="text-4xl md:text-5xl font-serif-fancy italic font-bold mb-4 tracking-wide text-ink">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl hero-title
+                 font-bold mb-4 tracking-wide text-ink">
                     Skins & Themes
                 </h1>
                 <p className="text-muted text-sm md:text-base leading-relaxed font-light">
