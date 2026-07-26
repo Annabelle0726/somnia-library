@@ -20,11 +20,11 @@ export function Library() {
 
     // 提取为独立的 fetch 函数，方便在新增书籍后调用刷新
     const { user } = useAuth();
-
+    const userId = user?.id;
     const fetchBooks = useCallback(async () => {
         setLoading(true);
         try {
-            // 1. 查询所有图书
+            // 查询所有图书
             const { data: booksData, error: booksError } = await supabase
                 .from('books')
                 .select('*')
@@ -35,24 +35,23 @@ export function Library() {
                 return;
             }
 
-            // 2. 如果用户已登录，查询该用户的全部收藏 IDs
+            // 查询当前用户的收藏列表
             let faveBookIds = new Set<string>();
-            if (user) {
-                const { data: faveData, error: faveError } = await supabase
+            if (userId) {
+                const { data: faveData } = await supabase
                     .from('user_favorites')
                     .select('book_id')
-                    .eq('user_id', user.id);
+                    .eq('user_id', userId);
 
-                if (!faveError && faveData) {
+                if (faveData) {
                     faveBookIds = new Set(faveData.map((f) => f.book_id));
                 }
             }
 
-            // 3. 组合数据：判断每本书的 id 是否在用户的收藏 Set 中
             if (booksData) {
                 const formattedBooks = booksData.map((item: any) => ({
                     ...item,
-                    is_fave: faveBookIds.has(item.id), // 👈 这一步将数据库存入的收藏持久化还原到页面 UI
+                    is_fave: faveBookIds.has(item.id), // 关联收藏状态
                     tropes: [
                         item.tropes_0,
                         item.tropes_1,
@@ -64,11 +63,11 @@ export function Library() {
                 setBooks(formattedBooks as BookWithUserData[]);
             }
         } catch (err) {
-            console.error('Error:', err);
+            console.error('Error fetching library:', err);
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [userId]);
 
     useEffect(() => {
         fetchBooks();
@@ -105,8 +104,6 @@ export function Library() {
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 text-xs font-bold text-tertiary uppercase tracking-wider font-[family-name:var(--font-mono)]">
                         <span>✦ Database Archive</span>
-                        <span>•</span>
-                        <span>{books.length} Titles</span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl hero-title font-display font-bold text-ink tracking-tight">
                         Sanctuary Library
