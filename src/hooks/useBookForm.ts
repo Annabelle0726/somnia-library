@@ -31,10 +31,10 @@ export function useBookForm(initialTitle = '') {
         author: '',
         series: '',
         seriesPosition: '',
-        subgenre: 'Romantasy', // 默认选中的类别，用户可在下拉框/输入框随意修改
-        cover: '',             // 封面 URL，支持自动获取或用户手动贴入 URL
-        rating: '0',           // 默认评分，用户可自由滑动/修改
-        spice: '0',            // 默认辣度，用户可自由滑动/修改
+        subgenre: 'Romantasy',
+        cover: '',
+        rating: '0',
+        spice: '0',
         tropesInput: '',
         readStatus: 'unread',
         fave: false,
@@ -60,7 +60,7 @@ export function useBookForm(initialTitle = '') {
             }
             setForm(prev => ({
                 ...prev,
-                isbn: clean,
+                isbn: book.isbn || clean, // ⚡ 使用唯一标准的 ISBN 填充
                 title: book.title || prev.title,
                 author: book.authors || prev.author,
                 cover: book.cover || prev.cover,
@@ -91,42 +91,44 @@ export function useBookForm(initialTitle = '') {
 
             let targetBookId: string | null = null;
 
-            // 1. 先检索公共 books 表是否已存在该书（按 ISBN 优先检索，无 ISBN 则按书名+作者检索）
+            // 1. 优先查重：按唯一的 ISBN 查询（加 limit 1 提高鲁棒性）
             if (clean) {
                 const { data: existingBook } = await supabase
                     .from('books')
                     .select('id')
                     .eq('isbn', clean)
+                    .limit(1)
                     .maybeSingle();
                 if (existingBook) targetBookId = existingBook.id;
             }
 
+            // 2. 次选查重：按书名 + 作者忽略大小写精准匹配
             if (!targetBookId) {
                 const { data: existingTitle } = await supabase
                     .from('books')
                     .select('id')
                     .ilike('title', form.title.trim())
                     .ilike('author', form.author.trim())
+                    .limit(1)
                     .maybeSingle();
                 if (existingTitle) targetBookId = existingTitle.id;
             }
 
-            // 2. 如果公共库里没有，才插入新书到 books 表 (带上 created_by)
+            // 3. 全站未找到该书时，才在公共 books 表中插入新记录
             if (!targetBookId) {
                 const tropes = form.tropesInput.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5);
 
-                // ⚡ 将用户在 form 里填写/修改的各个字段打包转换为数据库 Payload
                 const payload = {
-                    created_by: user.id, // ⚡ 关键补充：明确标记谁创建了这本新书
+                    created_by: user.id, // ⚡ 记录由当前用户首次创建
                     isbn: clean || null,
                     title: form.title.trim(),
                     author: form.author.trim(),
                     series: form.series.trim() || null,
                     seriesposition: form.seriesPosition ? parseFloat(form.seriesPosition) : null,
-                    subgenre: form.subgenre.trim() || null,   // 用户修改后的 subgenre
-                    cover: form.cover.trim() || null,         // 用户修改后的 cover
-                    rating: parseFloat(form.rating) || 0,     // 用户修改后的 rating
-                    spice: parseInt(form.spice, 10) || 0,     // 用户修改后的 spice
+                    subgenre: form.subgenre.trim() || null,
+                    cover: form.cover.trim() || null,
+                    rating: parseFloat(form.rating) || 0,
+                    spice: parseInt(form.spice, 10) || 0,
                     tropes_0: tropes[0] || null,
                     tropes_1: tropes[1] || null,
                     tropes_2: tropes[2] || null,
@@ -144,7 +146,7 @@ export function useBookForm(initialTitle = '') {
                 targetBookId = newBook.id;
             }
 
-            // 3. 将该书关联到当前用户的个人书房 (user_favorites & user_book_status)
+            // 4. 将图书关联到当前用户的个人书房状态 (user_favorites & user_book_status)
             if (form.fave) {
                 await supabase
                     .from('user_favorites')
@@ -162,7 +164,6 @@ export function useBookForm(initialTitle = '') {
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id,book_id' });
 
-            // ⚡ 成功后重置表单为初始状态
             setForm(initialFormState);
             onSuccess?.();
         } catch (err: any) {
