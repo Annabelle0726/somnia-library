@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { cleanIsbn, isValidIsbn } from '../lib/isbn';
 import { fetchBookByIsbn } from '../lib/openlibrary';
 import type { ReadingStatus } from '../types/book';
+import toast from "react-hot-toast";
 
 export type BookFormData = {
     isbn: string;
@@ -60,7 +61,7 @@ export function useBookForm(initialTitle = '') {
             }
             setForm(prev => ({
                 ...prev,
-                isbn: book.isbn || clean, // ⚡ 使用唯一标准的 ISBN 填充
+                isbn: book.isbn || clean,
                 title: book.title || prev.title,
                 author: book.authors || prev.author,
                 cover: book.cover || prev.cover,
@@ -91,7 +92,7 @@ export function useBookForm(initialTitle = '') {
 
             let targetBookId: string | null = null;
 
-            // 1. 优先查重：按唯一的 ISBN 查询（加 limit 1 提高鲁棒性）
+            // 1. 优先在公共 books 表中查重：按 ISBN 查询
             if (clean) {
                 const { data: existingBook } = await supabase
                     .from('books')
@@ -102,7 +103,7 @@ export function useBookForm(initialTitle = '') {
                 if (existingBook) targetBookId = existingBook.id;
             }
 
-            // 2. 次选查重：按书名 + 作者忽略大小写精准匹配
+            // 2. 次选在公共 books 表中查重：按书名 + 作者查询
             if (!targetBookId) {
                 const { data: existingTitle } = await supabase
                     .from('books')
@@ -114,12 +115,42 @@ export function useBookForm(initialTitle = '') {
                 if (existingTitle) targetBookId = existingTitle.id;
             }
 
-            // 3. 全站未找到该书时，才在公共 books 表中插入新记录
+            // ⚡ 3. 关键新增：如果这本书在公共库中已经存在，检查当前用户的个人 Library 中是否已经有了！
+            if (targetBookId) {
+                const { data: userBook } = await supabase
+                    .from('user_book_status')
+                    .select('book_id')
+                    .eq('user_id', user.id)
+                    .eq('book_id', targetBookId)
+                    .limit(1)
+                    .maybeSingle();
+
+                if (userBook) {
+                    // 如果个人书房里已经有了，拦截提交并提示用户
+                    const msg = 'This tome is already archived in your library!';
+                    setErrorMsg(msg);
+                    // 👈 2. 弹出超醒目的 Toast 提示！
+                    toast.error(msg, {
+                        duration: 3000,
+                        style: {
+                            background: '#1f2937',
+                            color: '#f87171',
+                            border: '1px solid #ef4444',
+                        },
+                        icon: '📚',
+                    });
+
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            // 4. 全站公共库完全没有这本书时，才在 books 表中创建新记录
             if (!targetBookId) {
                 const tropes = form.tropesInput.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5);
 
                 const payload = {
-                    created_by: user.id, // ⚡ 记录由当前用户首次创建
+                    created_by: user.id,
                     isbn: clean || null,
                     title: form.title.trim(),
                     author: form.author.trim(),
@@ -146,7 +177,7 @@ export function useBookForm(initialTitle = '') {
                 targetBookId = newBook.id;
             }
 
-            // 4. 将图书关联到当前用户的个人书房状态 (user_favorites & user_book_status)
+            // 5. 插入该书到当前用户的个人书房状态 (user_favorites & user_book_status)
             if (form.fave) {
                 await supabase
                     .from('user_favorites')

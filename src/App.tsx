@@ -18,10 +18,11 @@ import {Settings} from "./pages/Settings.tsx";
 import {ProtectedRoute} from './components/layout/ProtectedRoute.tsx';
 
 import Clubs from "./pages/Clubs.tsx";
-// 外部页面 (新建这些文件)
+// 外部页面
 import Landing from './auth/Landing';
 import AuthScreen from './auth/AuthScreen';
 import UnauthShell from './auth/UnauthShell';
+import { Toaster } from 'react-hot-toast';
 
 const basename = import.meta.env.MODE === 'production' ? '/somnia-library' : '';
 
@@ -29,6 +30,9 @@ export default function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
+                {/* ⚡ 1. 将 Toast 放在全局顶层，与 Router 平级 */}
+                <Toaster position="top-center" reverseOrder={false} />
+
                 <HashRouter basename={basename}>
                     <Routes>
                         {/* 🌟 1. 公共路由：不需要侧边栏 */}
