@@ -5,6 +5,7 @@ import type {Book, BookWithUserData} from '../types/book';
 import { BookCard } from '../components/library/BookCard';
 import { AddBookModal } from '../components/library/AddBookModal';
 import {useAuth} from "../auth/useAuth.ts";
+import {BookDetailModal} from "../components/library/BookDetailModal.tsx";
 
 export function Library() {
     const [books, setBooks] = useState<Book[]>([]);
@@ -17,6 +18,7 @@ export function Library() {
 
     // 弹窗状态
     const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+    const [selectedBook, setSelectedBook] = useState<BookWithUserData | null>(null);
 
     // 提取为独立的 fetch 函数，方便在新增书籍后调用刷新
     const { user } = useAuth();
@@ -180,8 +182,7 @@ export function Library() {
                                 key={book.id}
                                 book={book}
                                 onEdit={(b) => {
-                                    // TODO: 后面可以做书籍详情点击查看/修改
-                                    console.log('Selected book:', b);
+                                    setSelectedBook(b);
                                 }}
                             />
                         ))}
@@ -217,6 +218,20 @@ export function Library() {
                     </div>
 
                 </>
+            )}
+            {selectedBook && (
+                <BookDetailModal
+                    book={selectedBook}
+                    onClose={() => setSelectedBook(null)}
+                    onUpdate={(updatedBook) => {
+                        // 1. 瞬间同步更新外层卡片墙上的该本书（无刷新点亮爱心/改变进度）
+                        setBooks((prevBooks) =>
+                            prevBooks.map((b) => (b.id === updatedBook.id ? updatedBook : b))
+                        );
+                        // 2. 同时更新当前打开的 Modal 内部书籍状态
+                        setSelectedBook(updatedBook);
+                    }}
+                />
             )}
 
             {/* 新增书籍快捷弹窗 */}
