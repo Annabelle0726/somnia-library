@@ -24,45 +24,80 @@ export function Library() {
     const { user } = useAuth();
     const userId = user?.id;
     const fetchBooks = useCallback(async () => {
+        // ⚡ 防护：如果用户尚未登录或 userId 还没加载出来，直接退出
+        if (!userId) {
+            setBooks([]);
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         try {
-            // 查询所有图书
-            const { data: booksData, error: booksError } = await supabase
-                .from('books')
-                .select('*')
-                .order('created_at', { ascending: false });
+            // 1. 级联联表查询：查 user_book_status 连带对应的 books 主表数据
+            const { data: statusData, error: statusError } = await supabase
+                .from('user_book_status')
+                .select(`
+                status,
+                progress,
+                books (
+                    id,
+                    isbn,
+                    title,
+                    author,
+                    series,
+                    seriesposition,
+                    subgenre,
+                    spice,
+                    rating,
+                    cover,
+                    created_at,
+                    tropes_0,
+                    tropes_1,
+                    tropes_2,
+                    tropes_3,
+                    tropes_4
+                )
+            `)
+                .eq('user_id', userId);
 
-            if (booksError) {
-                console.error('Failed to fetch books:', booksError);
+            if (statusError) {
+                console.error('Failed to fetch user books:', statusError);
                 return;
             }
 
-            // 查询当前用户的收藏列表
+            // 2. 查询当前用户的收藏列表
             let faveBookIds = new Set<string>();
-            if (userId) {
-                const { data: faveData } = await supabase
-                    .from('user_favorites')
-                    .select('book_id')
-                    .eq('user_id', userId);
+            const { data: faveData } = await supabase
+                .from('user_favorites')
+                .select('book_id')
+                .eq('user_id', userId);
 
-                if (faveData) {
-                    faveBookIds = new Set(faveData.map((f) => f.book_id));
-                }
+            if (faveData) {
+                faveBookIds = new Set(faveData.map((f) => f.book_id));
             }
 
-            if (booksData) {
-                const formattedBooks = booksData.map((item: any) => ({
-                    ...item,
-                    is_fave: faveBookIds.has(item.id), // 关联收藏状态
-                    tropes: [
-                        item.tropes_0,
-                        item.tropes_1,
-                        item.tropes_2,
-                        item.tropes_3,
-                        item.tropes_4,
-                    ].filter(Boolean),
-                }));
-                setBooks(formattedBooks as BookWithUserData[]);
+            // 3. 展开并组装成 BookWithUserData
+            if (statusData) {
+                const formattedBooks: BookWithUserData[] = statusData
+                    .filter((item) => item.books) // 过滤掉防空记录
+                    .map((item: any) => {
+                        const book = item.books; // 联表拉出来的公共图书对象
+                        return {
+                            ...book,
+                            user_status: item.status, // 来自 user_book_status 的状态
+                            progress: item.progress,   // 来自 user_book_status 的进度
+                            is_fave: faveBookIds.has(book.id), // 关联收藏状态
+                            tropes: [
+                                book.tropes_0,
+                                book.tropes_1,
+                                book.tropes_2,
+                                book.tropes_3,
+                                book.tropes_4,
+                            ].filter(Boolean),
+                        };
+                    });
+
+                setBooks(formattedBooks);
             }
         } catch (err) {
             console.error('Error fetching library:', err);
@@ -70,7 +105,6 @@ export function Library() {
             setLoading(false);
         }
     }, [userId]);
-
     useEffect(() => {
         fetchBooks();
     }, [fetchBooks]);

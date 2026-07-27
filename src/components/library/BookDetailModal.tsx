@@ -253,20 +253,6 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                         </div>
                     </div>
 
-                    {/*/!* 右侧 Footer：危险操作与元数据提示 *!/*/}
-                    {/*<div className="p-4 px-6 border-t border-line/50 bg-bg2/40 flex items-center justify-between text-[11px] text-muted font-[family-name:var(--font-mono)] shrink-0">*/}
-                    {/*    <span>ISBN: {book.isbn || 'N/A'}</span>*/}
-                    {/*    <button*/}
-                    {/*        onClick={() => {*/}
-                    {/*            if (confirm(`Are you sure you want to remove "${book.title}" from your library?`)) {*/}
-                    {/*                // TODO: 触发删除书籍逻辑*/}
-                    {/*            }*/}
-                    {/*        }}*/}
-                    {/*        className="text-rose-400/80 hover:text-rose-500 hover:underline font-sans font-medium transition-colors"*/}
-                    {/*    >*/}
-                    {/*        Remove Book*/}
-                    {/*    </button>*/}
-                    {/*</div>*/}
                 </div>
             </div>
         </div>
