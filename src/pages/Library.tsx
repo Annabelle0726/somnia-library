@@ -24,7 +24,6 @@ export function Library() {
     const { user } = useAuth();
     const userId = user?.id;
     const fetchBooks = useCallback(async () => {
-        // ⚡ 防护：如果用户尚未登录或 userId 还没加载出来，直接退出
         if (!userId) {
             setBooks([]);
             setLoading(false);
@@ -33,72 +32,62 @@ export function Library() {
 
         setLoading(true);
         try {
-            // 1. 级联联表查询：查 user_book_status 连带对应的 books 主表数据
-            const { data: statusData, error: statusError } = await supabase
-                .from('user_book_status')
-                .select(`
-                status,
-                progress,
-                books (
-                    id,
-                    isbn,
-                    title,
-                    author,
-                    series,
-                    seriesposition,
-                    subgenre,
-                    spice,
-                    rating,
-                    cover,
-                    created_at,
-                    tropes_0,
-                    tropes_1,
-                    tropes_2,
-                    tropes_3,
-                    tropes_4
-                )
-            `)
-                .eq('user_id', userId);
+            // 1. 直接查询 books 表中所有由当前用户创建的书籍
+            const { data: myBooks, error: booksError } = await supabase
+                .from('books')
+                .select('*')
+                .or(`created_by.eq.${userId},created_by.is.null`) // ⚡ 关键：按 created_by 获取当前用户添加的所有书
+                .order('created_at', { ascending: false });
 
-            if (statusError) {
-                console.error('Failed to fetch user books:', statusError);
+            if (booksError) {
+                console.error('Failed to fetch user created books:', booksError);
                 return;
             }
 
-            // 2. 查询当前用户的收藏列表
-            let faveBookIds = new Set<string>();
+            if (!myBooks || myBooks.length === 0) {
+                setBooks([]);
+                return;
+            }
+
+            const bookIds = myBooks.map((b) => b.id);
+
+            // 2. 并行获取这些书的个人阅读状态 (user_book_status)
+            const { data: statusData } = await supabase
+                .from('user_book_status')
+                .select('book_id, status, progress')
+                .eq('user_id', userId)
+                .in('book_id', bookIds);
+
+            // 3. 并行获取这些书的个人收藏状态 (user_favorites)
             const { data: faveData } = await supabase
                 .from('user_favorites')
                 .select('book_id')
-                .eq('user_id', userId);
+                .eq('user_id', userId)
+                .in('book_id', bookIds);
 
-            if (faveData) {
-                faveBookIds = new Set(faveData.map((f) => f.book_id));
-            }
+            // 转为 Quick Lookup Map
+            const statusMap = new Map(statusData?.map((s) => [s.book_id, s]) || []);
+            const faveSet = new Set(faveData?.map((f) => f.book_id) || []);
 
-            // 3. 展开并组装成 BookWithUserData
-            if (statusData) {
-                const formattedBooks: BookWithUserData[] = statusData
-                    .filter((item) => item.books) // 过滤掉防空记录
-                    .map((item: any) => {
-                        const book = item.books; // 联表拉出来的公共图书对象
-                        return {
-                            ...book,
-                            user_status: item.status, // 来自 user_book_status 的状态
-                            progress: item.progress,   // 来自 user_book_status 的进度
-                            is_fave: faveBookIds.has(book.id), // 关联收藏状态
-                            tropes: [
-                                book.tropes_0,
-                                book.tropes_1,
-                                book.tropes_2,
-                                book.tropes_3,
-                                book.tropes_4,
-                            ].filter(Boolean),
-                        };
-                    });
+            // 4. 将图书元数据与个人状态拼装成最终的 BookWithUserData
+            const formattedBooks: BookWithUserData[] = myBooks.map((book) => {
+                const userStatusObj = statusMap.get(book.id);
+                return {
+                    ...book,
+                    user_status: userStatusObj?.status || 'want_to_read', // 如果没有单独设置状态，默认显示 want_to_read
+                    progress: userStatusObj?.progress || 0,
+                    is_fave: faveSet.has(book.id),
+                    tropes: [
+                        book.tropes_0,
+                        book.tropes_1,
+                        book.tropes_2,
+                        book.tropes_3,
+                        book.tropes_4,
+                    ].filter(Boolean),
+                };
+            });
 
-                setBooks(formattedBooks);
-            }
+            setBooks(formattedBooks);
         } catch (err) {
             console.error('Error fetching library:', err);
         } finally {
