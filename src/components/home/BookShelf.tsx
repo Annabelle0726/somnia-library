@@ -203,7 +203,7 @@ export function Bookshelf() {
                         <BookShelfRow
                             title="Hall of Favorites"
                             icon="♥"
-                            colorTheme="primary"
+                            colorTheme="muted"
                             books={faveBooks}
                             onBookClick={(book) => setSelectedBook(book)}
                         />

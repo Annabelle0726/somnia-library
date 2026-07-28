@@ -54,8 +54,9 @@ export function BookShelfHeader({
                 </div>
 
                 {/* 4. Faves */}
-                <div className="group flex items-center gap-2 px-3 py-1.5 border border-line bg-card/60 backdrop-blur-sm text-xs font-display text-ink tracking-wide transition-all duration-300 hover:bg-bg2/80 hover:border-primary">
-                    <span className="text-primary text-[10px] group-hover:scale-110 transition-transform">♥</span>
+                <div className="group flex items-center gap-2 px-3 py-1.5 border border-line bg-card/60 backdrop-blur-sm text-xs font-display text-ink tracking-wide transition-all duration-300 hover:bg-bg2/80 hover:border-muted">
+                    {/* ⚡ 修复：将 text-primary 改为 text-muted 保持一致 */}
+                    <span className="text-muted text-[10px] group-hover:scale-110 transition-transform">♥</span>
                     <span className="font-bold text-sm font-mono text-ink">{loading ? '-' : faveCount}</span>
                     <span className="text-muted">faves</span>
                 </div>

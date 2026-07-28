@@ -1,13 +1,13 @@
-// src/components/home/BookShelfRow.tsx
+// src/components/home/BookShelfHeader.tsx
 import type { BookWithUserData } from '../../types/book';
 import { BookSpine } from './BookSpine';
 
 interface BookShelfRowProps {
     title: string;
     icon: string;
-    colorTheme: 'primary' | 'secondary' | 'tertiary';
+    colorTheme: 'primary' | 'secondary' | 'tertiary' | 'muted';
     books: BookWithUserData[];
-    /** 👈 新增：点击图书时的回调 */
+    /** 点击图书时的回调 */
     onBookClick?: (book: BookWithUserData) => void;
 }
 
@@ -16,6 +16,7 @@ export function BookShelfRow({ title, icon, colorTheme, books, onBookClick }: Bo
         primary: 'text-primary',
         secondary: 'text-secondary',
         tertiary: 'text-tertiary',
+        muted: 'text-muted',
     };
 
     return (
@@ -25,9 +26,6 @@ export function BookShelfRow({ title, icon, colorTheme, books, onBookClick }: Bo
                 <h3 className="font-display font-bold text-sm text-ink tracking-wide">
                     {title}
                 </h3>
-                {/*<span className="text-xs font-mono text-muted ml-auto">*/}
-                {/*    ({books.length})*/}
-                {/*</span>*/}
             </div>
 
             {books.length === 0 ? (

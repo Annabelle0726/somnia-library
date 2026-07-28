@@ -1,30 +1,47 @@
 // src/components/home/BookSpine.tsx
-// import React from 'react';
 
 interface BookSpineProps {
     title: string;
     /** 与 BookShelfHeader & BookShelfRow 保持统一的主题配色 */
-    colorTheme?: 'primary' | 'secondary' | 'tertiary';
-    /** 👈 新增点击回调 */
+    colorTheme?: 'primary' | 'secondary' | 'tertiary' | 'muted';
+    /** 点击回调 */
     onClick?: () => void;
 }
 
 export function BookSpine({ title, colorTheme = 'primary', onClick }: BookSpineProps) {
     const themeStyles = {
-        primary: 'hover:border-primary hover:bg-primary/10 group-hover:text-primary',
-        secondary: 'hover:border-secondary hover:bg-secondary/10 group-hover:text-secondary',
-        tertiary: 'hover:border-tertiary hover:bg-tertiary/10 group-hover:text-tertiary',
+        primary: {
+            border: 'border-line/80 hover:border-primary',
+            bg: 'bg-card hover:bg-primary/10',
+            text: 'text-ink group-hover:text-primary',
+        },
+        secondary: {
+            border: 'border-line/80 hover:border-secondary',
+            bg: 'bg-card hover:bg-secondary/10',
+            text: 'text-ink group-hover:text-secondary',
+        },
+        tertiary: {
+            border: 'border-line/80 hover:border-tertiary',
+            bg: 'bg-card hover:bg-tertiary/10',
+            text: 'text-ink group-hover:text-tertiary',
+        },
+        muted: {
+            border: 'border-muted/60 hover:border-muted',
+            bg: 'bg-card hover:bg-muted/10',
+            text: 'text-muted group-hover:text-muted',
+        },
     };
 
-    const currentThemeStyle = themeStyles[colorTheme] || themeStyles.primary;
+    // 保底处理，防止 undefined 导致崩溃
+    const style = themeStyles[colorTheme] || themeStyles.primary;
 
     return (
         <div
             onClick={onClick}
-            className={`w-12 h-48 bg-card border border-line/80 rounded-t-md shadow-md flex items-center justify-center cursor-pointer hover:-translate-y-2 transition-all duration-300 group ${currentThemeStyle.split(' ').slice(0, 2).join(' ')}`}
+            className={`w-12 h-48 border rounded-t-md shadow-md flex items-center justify-center cursor-pointer hover:-translate-y-2 transition-all duration-300 group ${style.border} ${style.bg}`}
             title={title}
         >
-            <p className={`text-ink font-display text-xs tracking-widest [writing-mode:vertical-rl] select-none text-center truncate max-h-40 transition-colors ${currentThemeStyle.split(' ')[2]}`}>
+            <p className={`font-display text-xs tracking-widest [writing-mode:vertical-rl] select-none text-center truncate max-h-40 transition-colors ${style.text}`}>
                 {title}
             </p>
         </div>
