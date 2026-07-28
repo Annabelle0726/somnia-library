@@ -5,6 +5,7 @@ interface BookShelfHeaderProps {
     wantToReadCount: number;
     readCount: number;
     faveCount: number;
+    onOpenQuiz?: () => void;
 }
 
 export function BookShelfHeader({
@@ -13,6 +14,7 @@ export function BookShelfHeader({
                                     wantToReadCount,
                                     readCount,
                                     faveCount,
+                                    onOpenQuiz,
                                 }: BookShelfHeaderProps) {
     return (
         <div className="relative w-full
@@ -64,7 +66,10 @@ export function BookShelfHeader({
 
             {/* 右侧：操作按钮 */}
             <div className="flex flex-col items-center sm:items-end gap-3 z-10">
-                <button className="group flex items-center gap-2 px-6 py-2 bg-primary text-on-primary border border-primary/60 text-sm font-display tracking-wider shadow-md hover:opacity-90 transition-all duration-300 rounded-sm">
+                <button
+                    onClick={onOpenQuiz}
+                    className="group flex items-center gap-2 px-6 py-2 bg-primary text-on-primary border border-primary/60 text-sm font-display tracking-wider shadow-md hover:opacity-90 transition-all duration-300 rounded-sm cursor-pointer"
+                >
                     <span className="group-hover:scale-110 transition-transform">💘</span>
                     Find my next read
                 </button>
