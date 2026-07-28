@@ -7,10 +7,9 @@ import { HeaderReadingStats } from "./HeaderReadingStats.tsx";
 export function HomeHeader() {
 
     return (
-        <header className="sticky top-2 sm:top-3 z-50 w-full mx-auto transition-all duration-600">
+        <header className="w-full mx-auto transition-all duration-600">
             <div className="bg-card/70 backdrop-blur-md border border-line/50 rounded-[20px] sm:rounded-[24px] shadow-xl shadow-black/5 py-3.5 sm:py-4 px-4 sm:px-8 transition-all duration-500 hover:border-tertiary/30 hover:shadow-2xl">
                 <div className="relative group flex flex-col items-start w-full">
-
                     {/* Row 1: 左侧（头像 + 问候语） | 右侧（Clock） */}
                     <div className="flex items-center justify-between w-full gap-2">
                         {/* 左侧：头像 + 问候语 */}
