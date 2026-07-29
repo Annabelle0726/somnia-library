@@ -5,7 +5,8 @@ import type { BookWithUserData } from '../../types/book';
 import { BookShelfHeader } from './BookShelfHeader';
 import { BookShelfRow } from './BookShelfRow';
 import { BookDetailModal } from '../library/BookDetailModal';
-import {NextReadQuizModal} from "./NextReadQuizModal.tsx";
+import {NextReadQuizModal} from "./NextReadQuizModal";
+import {SurpriseModal} from "./SupriseModal";
 
 export function Bookshelf() {
     const [loading, setLoading] = useState(true);
@@ -16,8 +17,32 @@ export function Bookshelf() {
     const [readBooks, setReadBooks] = useState<BookWithUserData[]>([]);
     const [faveBooks, setFaveBooks] = useState<BookWithUserData[]>([]);
     const [isQuizOpen, setIsQuizOpen] = useState(false);
+
     // 👈 正在弹窗查看/编辑的图书
     const [selectedBook, setSelectedBook] = useState<BookWithUserData | null>(null);
+
+    // ⚡ 盲盒抽卡状态
+    const [isSurpriseOpen, setIsSurpriseOpen] = useState(false);
+    const [surpriseBook, setSurpriseBook] = useState<BookWithUserData | null>(null);
+    const [surprisePool, setSurprisePool] = useState<BookWithUserData[]>([]);
+
+    // ⚡ 触发盲盒逻辑
+    const handleSurpriseMe = () => {
+        // 优先抽待读（TBR），如果为空再抽全库
+        let pool = wantToReadBooks.length > 0
+            ? wantToReadBooks
+            : [...readingBooks, ...readBooks, ...faveBooks];
+
+        if (pool.length === 0) {
+            alert("Your shelf is currently empty! Add some books first.");
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        setSurprisePool(pool);
+        setSurpriseBook(pool[randomIndex]);
+        setIsSurpriseOpen(true);
+    };
 
     useEffect(() => {
         async function fetchBookshelfData() {
@@ -168,6 +193,8 @@ export function Bookshelf() {
                 readCount={readBooks.length}
                 faveCount={faveBooks.length}
                 onOpenQuiz={() => setIsQuizOpen(true)}
+                onSurpriseMe={handleSurpriseMe} // ⚡ 传入抽书函数
+
             />
 
             {/* 下方 4 行书架 */}
@@ -221,6 +248,14 @@ export function Bookshelf() {
                     // 当用户在匹配结果中点击某本书时，直接唤起图书详情页
                     setSelectedBook(book);
                 }}
+            />
+            {/* ⚡ 挂载 🎲 Roll Again 盲盒弹窗 */}
+            <SurpriseModal
+                isOpen={isSurpriseOpen}
+                pool={surprisePool}
+                initialBook={surpriseBook}
+                onClose={() => setIsSurpriseOpen(false)}
+                onSelectBook={(book) => setSelectedBook(book)}
             />
 
             {/* ⚡ 挂载完整的 BookDetailModal 弹窗 */}

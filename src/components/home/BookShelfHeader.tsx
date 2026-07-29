@@ -6,6 +6,8 @@ interface BookShelfHeaderProps {
     readCount: number;
     faveCount: number;
     onOpenQuiz?: () => void;
+    onSurpriseMe?: () => void;
+    isSurprising?: boolean;
 }
 
 export function BookShelfHeader({
@@ -15,6 +17,8 @@ export function BookShelfHeader({
                                     readCount,
                                     faveCount,
                                     onOpenQuiz,
+                                    onSurpriseMe,
+                                    isSurprising = false,
                                 }: BookShelfHeaderProps) {
     return (
         <div className="relative w-full
@@ -74,9 +78,15 @@ export function BookShelfHeader({
                     Find my next read
                 </button>
 
-                <button className="group flex items-center gap-2 px-4 py-1 text-xs font-display text-muted hover:text-primary transition-all duration-300 border-b border-line hover:border-primary pb-1">
-                    <span className="group-hover:rotate-12 transition-transform opacity-70">🎲</span>
-                    Surprise me
+                <button
+                    onClick={onSurpriseMe}
+                    disabled={loading || isSurprising}
+                    className="group flex items-center gap-2 px-4 py-1 text-xs font-display text-muted hover:text-primary transition-all duration-300 border-b border-line hover:border-primary pb-1 cursor-pointer disabled:opacity-50"
+                >
+                    <span className={`transition-transform duration-500 opacity-70 ${isSurprising ? 'animate-spin' : 'group-hover:rotate-180'}`}>
+                        🎲
+                    </span>
+                    {isSurprising ? 'Rolling the dice...' : 'Surprise me'}
                 </button>
             </div>
         </div>
