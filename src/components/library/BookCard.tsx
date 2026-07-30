@@ -15,9 +15,10 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
     const [isFave, setIsFave] = useState<boolean>(!!book.is_fave);
     const [favLoading, setFavLoading] = useState<boolean>(false);
 
+    // 🛠️ 核心修复 1: 当父组件传入的 book 发生彻底改变（如刷新、导航返回）时，强制刷新本地 state
     useEffect(() => {
         setIsFave(!!book.is_fave);
-    }, [book.is_fave]);
+    }, [book.id, book.is_fave]); // 加入 book.id 是保证换了一本书后彻底刷新状态
 
     // 处理小心心收藏切换 (同步更新 user_favorites 表)
     const handleToggleFavorite = async (e: React.MouseEvent) => {
@@ -25,28 +26,36 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
         if (!user || favLoading) return;
 
         const nextFaveState = !isFave;
-        setIsFave(nextFaveState);
+        setIsFave(nextFaveState); // 立刻进行乐观更新（UI瞬间变化）
         setFavLoading(true);
 
         try {
             if (nextFaveState) {
+                // 收藏
                 const favRecord: Pick<UserFavorite, 'user_id' | 'book_id'> = {
                     user_id: user.id,
                     book_id: book.id,
                 };
-                await supabase.from('user_favorites').insert(favRecord);
+                const { error } = await supabase.from('user_favorites').insert(favRecord);
+                if (error) throw error;
             } else {
                 // 取消收藏
-                await supabase
+                const { error } = await supabase
                     .from('user_favorites')
                     .delete()
                     .eq('user_id', user.id)
                     .eq('book_id', book.id);
+
+                if (error) throw error;
             }
+
+            // 🛠️ 核心修复 2: 操作成功，通知父组件更新全局状态
             onFavoriteToggle?.(book.id, nextFaveState);
         } catch (err) {
             console.error('Failed to update favorite status:', err);
-            setIsFave(!nextFaveState); // 失败时回滚
+            // 🛠️ 核心修复 3: 如果数据库报错，不仅本地回滚，还要触发父组件回滚以防万一
+            setIsFave(!nextFaveState);
+            onFavoriteToggle?.(book.id, !nextFaveState);
         } finally {
             setFavLoading(false);
         }

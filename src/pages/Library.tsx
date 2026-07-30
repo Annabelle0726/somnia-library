@@ -1,14 +1,14 @@
 // src/pages/Library.tsx
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type {Book, BookWithUserData} from '../types/book';
+import type { BookWithUserData } from '../types/book';
 import { BookCard } from '../components/library/BookCard';
 import { AddBookModal } from '../components/library/AddBookModal';
-import {useAuth} from "../auth/useAuth.ts";
-import {BookDetailModal} from "../components/library/BookDetailModal.tsx";
+import { useAuth } from "../auth/useAuth.ts";
+import { BookDetailModal } from "../components/library/BookDetailModal.tsx";
 
 export function Library() {
-    const [books, setBooks] = useState<Book[]>([]);
+    const [books, setBooks] = useState<BookWithUserData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -23,6 +23,34 @@ export function Library() {
     // 提取为独立的 fetch 函数，方便在新增书籍后调用刷新
     const { user } = useAuth();
     const userId = user?.id;
+
+    // 排序辅助函数（确保收藏与状态排序一致）
+    const sortBooks = (bookList: BookWithUserData[]) => {
+        return [...bookList].sort((a, b) => {
+            // 1️⃣ 优先：已收藏 (is_fave = true) 绝对排在最前面
+            if (a.is_fave !== b.is_fave) {
+                return a.is_fave ? -1 : 1;
+            }
+
+            // 2️⃣ 次优：按阅读状态排序 (Reading > Want to read > Read > Abandoned)
+            const statusPriority: Record<string, number> = {
+                reading: 1,
+                want_to_read: 2,
+                read: 3,
+                abandoned: 4,
+            };
+
+            const priorityA = statusPriority[a.user_status || ''] || 99;
+            const priorityB = statusPriority[b.user_status || ''] || 99;
+
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
+            }
+
+            // 3️⃣ 保底：保持原有的创建时间倒序
+            return 0;
+        });
+    };
 
     const fetchBooks = useCallback(async () => {
         setLoading(true);
@@ -71,7 +99,6 @@ export function Library() {
                 const userStatusObj = statusMap.get(book.id);
                 return {
                     ...book,
-                    // 💡 修复：没有记录时不要默认写 'want_to_read'，保持 undefined 或 null
                     user_status: userStatusObj?.status,
                     progress: userStatusObj?.progress || 0,
                     is_fave: faveSet.has(book.id),
@@ -81,47 +108,32 @@ export function Library() {
                         book.tropes_2,
                         book.tropes_3,
                         book.tropes_4,
-                    ].filter(Boolean),
+                    ].filter(Boolean) as string[],
                 };
             });
 
-            // 4. 🔥 自定义排序：Fave 优先 -> 状态优先 -> 创建时间倒序
-            const sortedBooks = [...formattedBooks].sort((a, b) => {
-                // 1️⃣ 优先：已收藏 (is_fave = true) 绝对排在最前面
-                if (a.is_fave !== b.is_fave) {
-                    return a.is_fave ? -1 : 1;
-                }
-
-                // 2️⃣ 次优：按阅读状态排序 (Reading > Want to read > Read > Abandoned)
-                const statusPriority: Record<string, number> = {
-                    reading: 1,
-                    want_to_read: 2,
-                    read: 3,
-                    abandoned: 4,
-                };
-
-                const priorityA = statusPriority[a.user_status || ''] || 99;
-                const priorityB = statusPriority[b.user_status || ''] || 99;
-
-                if (priorityA !== priorityB) {
-                    return priorityA - priorityB;
-                }
-
-                // 3️⃣ 保底：保持原有的创建时间倒序
-                return 0;
-            });
-
-            // 💡 修复：只保留 setBooks(sortedBooks)
-            setBooks(sortedBooks);
+            // 4. 自定义排序
+            setBooks(sortBooks(formattedBooks));
         } catch (err) {
             console.error('Error fetching library:', err);
         } finally {
             setLoading(false);
         }
     }, [userId]);
+
     useEffect(() => {
         fetchBooks();
     }, [fetchBooks]);
+
+    // 🌟 核心修复点：处理单张卡片的收藏状态切换，同步更新 Library 全局状态并重新排序
+    const handleFavoriteToggle = useCallback((bookId: string, isFave: boolean) => {
+        setBooks((prevBooks) => {
+            const updated = prevBooks.map((b) =>
+                b.id === bookId ? { ...b, is_fave: isFave } : b
+            );
+            return sortBooks(updated);
+        });
+    }, []);
 
     // 搜索过滤
     const filteredBooks = useMemo(() => {
@@ -202,7 +214,6 @@ export function Library() {
                     </span>
                 </div>
             ) : filteredBooks.length === 0 ? (
-                /* 搜索无结果：触发一键录入弹窗 */
                 <div className="flex flex-col items-center justify-center py-20 px-4 bg-card/40 border border-line/50 rounded-3xl text-center space-y-5 backdrop-blur-sm">
                     <div className="w-16 h-16 rounded-full bg-bg2 flex items-center justify-center text-3xl shadow-inner border border-line/40">
                         📜
@@ -232,6 +243,7 @@ export function Library() {
                                 onEdit={(b) => {
                                     setSelectedBook(b);
                                 }}
+                                onFavoriteToggle={handleFavoriteToggle} // 🌟 关键：绑定收藏状态切换监听
                             />
                         ))}
                     </div>
@@ -264,19 +276,17 @@ export function Library() {
                             </button>
                         </div>
                     </div>
-
                 </>
             )}
+
             {selectedBook && (
                 <BookDetailModal
                     book={selectedBook}
                     onClose={() => setSelectedBook(null)}
                     onUpdate={(updatedBook) => {
-                        // 1. 瞬间同步更新外层卡片墙上的该本书（无刷新点亮爱心/改变进度）
                         setBooks((prevBooks) =>
-                            prevBooks.map((b) => (b.id === updatedBook.id ? updatedBook : b))
+                            sortBooks(prevBooks.map((b) => (b.id === updatedBook.id ? updatedBook : b)))
                         );
-                        // 2. 同时更新当前打开的 Modal 内部书籍状态
                         setSelectedBook(updatedBook);
                     }}
                 />
@@ -288,7 +298,6 @@ export function Library() {
                 initialTitle={searchQuery}
                 onClose={() => setIsAddModalOpen(false)}
                 onSuccess={() => {
-                    // 录入成功后触发静默刷新，把新加的书立刻呈现出来！
                     fetchBooks();
                 }}
             />
