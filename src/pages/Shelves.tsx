@@ -12,7 +12,7 @@ export function Shelves() {
     const [wantToReadBooks, setWantToReadBooks] = useState<BookWithUserData[]>([]);
     const [readBooks, setReadBooks] = useState<BookWithUserData[]>([]);
     const [faveBooks, setFaveBooks] = useState<BookWithUserData[]>([]);
-    const [abandonedBooks, setAbandonedBooks] = useState<BookWithUserData[]>([]);
+    // const [abandonedBooks, setAbandonedBooks] = useState<BookWithUserData[]>([]);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedBook, setSelectedBook] = useState<BookWithUserData | null>(null);
@@ -65,7 +65,7 @@ export function Shelves() {
                 const wantToRead: BookWithUserData[] = [];
                 const read: BookWithUserData[] = [];
                 const faves: BookWithUserData[] = [];
-                const abandoned: BookWithUserData[] = [];
+                // const abandoned: BookWithUserData[] = [];
 
                 allBooks.forEach((rawBook: any) => {
                     const statusInfo = userStatuses[rawBook.id];
@@ -83,7 +83,7 @@ export function Shelves() {
                     if (status === 'reading') reading.push(bookWithUser);
                     else if (status === 'want_to_read') wantToRead.push(bookWithUser);
                     else if (status === 'read') read.push(bookWithUser);
-                    else if (status === 'abandoned') abandoned.push(bookWithUser);
+                    // else if (status === 'abandoned') abandoned.push(bookWithUser);
 
                     if (bookWithUser.is_fave) faves.push(bookWithUser);
                 });
@@ -92,7 +92,7 @@ export function Shelves() {
                 setWantToReadBooks(wantToRead);
                 setReadBooks(read);
                 setFaveBooks(faves);
-                setAbandonedBooks(abandoned);
+                // setAbandonedBooks(abandoned);
             } catch (err) {
                 console.error('Error loading shelves:', err);
             } finally {
@@ -134,7 +134,7 @@ export function Shelves() {
         setReadingBooks((prev) => updateList(prev, 'reading'));
         setWantToReadBooks((prev) => updateList(prev, 'want_to_read'));
         setReadBooks((prev) => updateList(prev, 'read'));
-        setAbandonedBooks((prev) => updateList(prev, 'abandoned'));
+        // setAbandonedBooks((prev) => updateList(prev, 'abandoned'));
 
         setFaveBooks((prev) => {
             if (updatedBook.is_fave) {
@@ -217,14 +217,14 @@ export function Shelves() {
                         onBookClick={(book) => setSelectedBook(book)}
                     />
 
-                    <BookShelfRow
-                        title="Did Not Finish (DNF)"
-                        icon="💀"
-                        colorTheme="muted"
-                        books={filterBooks(abandonedBooks)}
-                        onBookClick={(book) => setSelectedBook(book)}
-                        defaultExpanded={false} // 默认不展开 DNF 卷轴
-                    />
+                    {/*<BookShelfRow*/}
+                    {/*    title="Did Not Finish (DNF)"*/}
+                    {/*    icon="💀"*/}
+                    {/*    colorTheme="muted"*/}
+                    {/*    books={filterBooks(abandonedBooks)}*/}
+                    {/*    onBookClick={(book) => setSelectedBook(book)}*/}
+                    {/*    defaultExpanded={false} // 默认不展开 DNF 卷轴*/}
+                    {/*/>*/}
                 </div>
             )}
 
