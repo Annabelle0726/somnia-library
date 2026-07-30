@@ -5,12 +5,14 @@ import type { BookWithUserData } from '../../types/book';
 import { BookShelfHeader } from './BookShelfHeader';
 import { BookShelfRow } from './BookShelfRow';
 import { BookDetailModal } from '../library/BookDetailModal';
-import {NextReadQuizModal} from "./NextReadQuizModal";
-import {SurpriseModal} from "./SupriseModal";
+import { NextReadQuizModal } from "./NextReadQuizModal";
+import { SurpriseModal } from "./SupriseModal";
 
 export function Bookshelf() {
     const [loading, setLoading] = useState(true);
 
+    // ⚡ 保存全量附带 UserData 的图书数组（用于盲盒精确过滤）
+    const [allBooksWithUser, setAllBooksWithUser] = useState<BookWithUserData[]>([]);
     // 状态分类数组
     const [readingBooks, setReadingBooks] = useState<BookWithUserData[]>([]);
     const [wantToReadBooks, setWantToReadBooks] = useState<BookWithUserData[]>([]);
@@ -26,15 +28,13 @@ export function Bookshelf() {
     const [surpriseBook, setSurpriseBook] = useState<BookWithUserData | null>(null);
     const [surprisePool, setSurprisePool] = useState<BookWithUserData[]>([]);
 
-    // ⚡ 触发盲盒逻辑
+    // ⚡ 触发盲盒逻辑：排除 abandoned 后的全部书池
     const handleSurpriseMe = () => {
-        // 优先抽待读（TBR），如果为空再抽全库
-        let pool = wantToReadBooks.length > 0
-            ? wantToReadBooks
-            : [...readingBooks, ...readBooks, ...faveBooks];
+        // 过滤掉所有标记为 abandoned 的书
+        const pool = allBooksWithUser.filter((b) => b.user_status !== 'abandoned');
 
         if (pool.length === 0) {
-            alert("Your shelf is currently empty! Add some books first.");
+            alert("No available books in your library to roll!");
             return;
         }
 
@@ -108,6 +108,7 @@ export function Bookshelf() {
         const wantToRead: BookWithUserData[] = [];
         const read: BookWithUserData[] = [];
         const faves: BookWithUserData[] = [];
+        const fullList: BookWithUserData[] = [];
 
         rawBooksList.forEach((rawBook: any) => {
             const statusInfo = userStatuses[rawBook.id];
@@ -120,6 +121,8 @@ export function Bookshelf() {
                 progress: statusInfo?.progress ?? 0,
             };
 
+            fullList.push(bookWithUser);
+
             const status = bookWithUser.user_status;
 
             if (status === 'reading') reading.push(bookWithUser);
@@ -129,6 +132,9 @@ export function Bookshelf() {
             if (bookWithUser.is_fave) faves.push(bookWithUser);
         });
 
+        // 存入全量带 User 状态的书表
+        setAllBooksWithUser(fullList);
+
         setReadingBooks(reading);
         setWantToReadBooks(wantToRead);
         setReadBooks(read);
@@ -137,12 +143,16 @@ export function Bookshelf() {
 
     // ⚡ 当用户在 Modal 里改了阅读状态或收藏状态时的无刷新同步机制
     const handleBookUpdate = (updatedBook: BookWithUserData) => {
-        // 更新正在查看的图书对象
+        // 1. 同步更新全量数组
+        setAllBooksWithUser((prev) =>
+            prev.map((b) => (b.id === updatedBook.id ? updatedBook : b))
+        );
+
+        // 2. 更新正在查看的图书对象
         setSelectedBook(updatedBook);
 
-        // 更新各列表中的相应数据
+        // 3. 更新各列表中的相应数据
         const updateList = (prev: BookWithUserData[]) => {
-            // 如果书在当前列表中，更新它；如果状态改变不在当前列表中了，过滤掉
             return prev
                 .map((b) => (b.id === updatedBook.id ? updatedBook : b))
                 .filter((b) => {
@@ -194,7 +204,6 @@ export function Bookshelf() {
                 faveCount={faveBooks.length}
                 onOpenQuiz={() => setIsQuizOpen(true)}
                 onSurpriseMe={handleSurpriseMe} // ⚡ 传入抽书函数
-
             />
 
             {/* 下方 4 行书架 */}
@@ -244,11 +253,9 @@ export function Bookshelf() {
             <NextReadQuizModal
                 isOpen={isQuizOpen}
                 onClose={() => setIsQuizOpen(false)}
-                onSelectBook={(book) => {
-                    // 当用户在匹配结果中点击某本书时，直接唤起图书详情页
-                    setSelectedBook(book);
-                }}
+                onSelectBook={(book) => setSelectedBook(book)}
             />
+
             {/* ⚡ 挂载 🎲 Roll Again 盲盒弹窗 */}
             <SurpriseModal
                 isOpen={isSurpriseOpen}

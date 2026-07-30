@@ -1,3 +1,4 @@
+// src/components/home/SupriseModal.tsx
 import React, { useState, useEffect } from 'react';
 import type { BookWithUserData } from '../../types/book';
 
@@ -19,7 +20,9 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
     const [currentBook, setCurrentBook] = useState<BookWithUserData | null>(initialBook);
     const [isRolling, setIsRolling] = useState<boolean>(false);
 
-    // ⚡ 关键修复：每次 initialBook 变化或打开弹窗时，更新内部的 currentBook
+    // ⚡ 内部兜底：过滤掉 abandoned 状态的书
+    const activePool = pool.filter((b) => b.user_status !== 'abandoned');
+
     useEffect(() => {
         if (isOpen) {
             setCurrentBook(initialBook);
@@ -31,22 +34,20 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
 
     // ⚡ 循环重新抽卡逻辑
     const handleRollAgain = () => {
-        if (isRolling || pool.length === 0) return;
+        if (isRolling || activePool.length === 0) return;
         setIsRolling(true);
 
-        // 过滤掉当前这一本，尽量不抽到重复的
-        const availablePool = pool.length > 1
-            ? pool.filter((b) => b.id !== currentBook.id)
-            : pool;
+        // 优先在未抽中（排除当前这本）的可用书池里抽
+        const availablePool = activePool.length > 1
+            ? activePool.filter((b) => b.id !== currentBook.id)
+            : activePool;
 
-        // 模拟 500ms 的掷骰子/翻牌过程
         setTimeout(() => {
             const randomIndex = Math.floor(Math.random() * availablePool.length);
             setCurrentBook(availablePool[randomIndex]);
             setIsRolling(false);
         }, 500);
     };
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden animate-in fade-in duration-200">
             {/* 背景遮罩 */}
