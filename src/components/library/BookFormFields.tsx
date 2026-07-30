@@ -189,17 +189,17 @@ export const BookFormFields: React.FC<BookFormFieldsProps> = ({
             <div className="space-y-1.5">
                 <div className="flex justify-between items-baseline">
                     <label className="text-xs font-bold text-ink uppercase tracking-wider font-[family-name:var(--font-mono)]">
-                        Tropes / Keywords
+                        Review / Keywords *
                     </label>
                     <span className="text-[11px] text-muted font-normal font-[family-name:var(--font-mono)]">
-            Max 5, comma separated
-          </span>
+            Required if rating &gt; 0
+        </span>
                 </div>
                 <input
                     type="text"
                     value={form.tropesInput}
                     onChange={(e) => updateField('tropesInput', e.target.value)}
-                    placeholder="Enemies to Lovers, Slow Burn, Fae, Shadow Daddy..."
+                    placeholder="What did you think? Enemies to Lovers, Slow Burn, Great worldbuilding..."
                     className="w-full px-3.5 py-2.5 bg-bg2/90 border border-line rounded-xl text-xs text-ink placeholder:text-muted/50 focus:outline-none focus:border-tertiary font-[family-name:var(--font-mono)] shadow-inner"
                 />
             </div>

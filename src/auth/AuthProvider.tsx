@@ -4,13 +4,12 @@ import { supabase } from "../lib/supabase";
 import type { User } from '@supabase/supabase-js';
 
 // 定义 Context 的类型
-interface AuthContextType {
+export interface AuthContextType {
     user: User | null;
     loading: boolean; // 2. 用 loading 代替之前混乱的 login 状态
     logout: () => Promise<void>;
 }
 
-// 加上 export 关键字
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

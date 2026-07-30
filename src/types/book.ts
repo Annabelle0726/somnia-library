@@ -50,11 +50,28 @@ export interface UserFavorite {
 }
 
 /**
- * 4. 前端视图/组件组合类型 (UI Display Model)
- * 显式复用 UserBookStatus 和 UserFavorite 的类型定义，做到真正的类型追溯与安全！
+ * ⚡ 4. 用户图书评价/笔记（对应 public.reviews 表）
+ */
+export interface BookReview {
+    id: string;
+    book_id: string;
+    reviewer_id: string;
+    rating: number | null;
+    body: string | null;
+    created_at: string;
+    // 如果查询时连表带出了 profiles 个人资料
+    profiles?: {
+        username?: string;
+        avatar_url?: string;
+    } | null;
+}
+
+/**
+ * 5. 前端视图/组件组合类型 (UI Display Model)
  */
 export interface BookWithUserData extends Book {
     is_fave?: boolean;                           // 标记是否有对应的 UserFavorite 记录
-    user_status?: UserBookStatus['status'];      // 👈 直接关联引用 UserBookStatus.status
-    progress?: UserBookStatus['progress'];       // 👈 直接关联引用 UserBookStatus.progress
+    user_status?: UserBookStatus['status'];      // 关联引用 UserBookStatus.status
+    progress?: UserBookStatus['progress'];       // 关联引用 UserBookStatus.progress
+    user_review?: BookReview;                    // ⚡ 新增：当前登录用户对该书的评论与评分
 }

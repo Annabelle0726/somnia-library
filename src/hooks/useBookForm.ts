@@ -1,4 +1,4 @@
-// src/hooks/useBookForm.ts
+//src/hooks/useBookForm.ts
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { cleanIsbn, isValidIsbn } from '../lib/isbn';
@@ -76,12 +76,30 @@ export function useBookForm(initialTitle = '') {
     };
 
     const submit = async (onSuccess?: () => void) => {
+        // 1️⃣ 基础校验
         if (!form.title.trim() || !form.author.trim()) {
             return setErrorMsg('Title and Author are required.');
         }
         const clean = cleanIsbn(form.isbn);
         if (clean && !isValidIsbn(clean)) {
             return setErrorMsg('Invalid ISBN. Please check or leave blank.');
+        }
+
+        // 2️⃣ 🔥 评分 > 0 时必须写评论（提前拦截，避免创建了书但没创建 review）
+        const userRating = parseFloat(form.rating);
+        if (userRating > 0 && !form.tropesInput.trim()) {
+            const msg = 'Please write a short review when giving a rating!';
+            setErrorMsg(msg);
+            toast.error(msg, {
+                duration: 3000,
+                style: {
+                    background: 'var(--bg-card)',
+                    color: 'var(--tertiary)',
+                    border: '1px solid var(--tertiary)',
+                },
+                icon: '✍️',
+            });
+            return;
         }
 
         setLoading(true);
@@ -92,7 +110,7 @@ export function useBookForm(initialTitle = '') {
 
             let targetBookId: string | null = null;
 
-            // 1. 优先在公共 books 表中查重：按 ISBN 查询
+            // 3️⃣ ISBN 查重
             if (clean) {
                 const { data: existingBook } = await supabase
                     .from('books')
@@ -103,7 +121,7 @@ export function useBookForm(initialTitle = '') {
                 if (existingBook) targetBookId = existingBook.id;
             }
 
-            // 2. 次选在公共 books 表中查重：按书名 + 作者查询
+            // 4️⃣ 书名+作者查重
             if (!targetBookId) {
                 const { data: existingTitle } = await supabase
                     .from('books')
@@ -115,7 +133,7 @@ export function useBookForm(initialTitle = '') {
                 if (existingTitle) targetBookId = existingTitle.id;
             }
 
-            // ⚡ 3. 关键新增：如果这本书在公共库中已经存在，检查当前用户的个人 Library 中是否已经有了！
+            // 5️⃣ 个人书房查重
             if (targetBookId) {
                 const { data: userBook } = await supabase
                     .from('user_book_status')
@@ -126,26 +144,23 @@ export function useBookForm(initialTitle = '') {
                     .maybeSingle();
 
                 if (userBook) {
-                    // 如果个人书房里已经有了，拦截提交并提示用户
                     const msg = 'This tome is already archived in your library!';
                     setErrorMsg(msg);
-                    // 👈 2. 弹出超醒目的 Toast 提示！
                     toast.error(msg, {
                         duration: 3000,
                         style: {
-                            background: '#1f2937',
-                            color: '#f87171',
-                            border: '1px solid #ef4444',
+                            background: 'var(--bg-card)',
+                            color: 'var(--primary)',
+                            border: '1px solid var(--primary)',
                         },
                         icon: '📚',
                     });
-
                     setLoading(false);
                     return;
                 }
             }
 
-            // 4. 全站公共库完全没有这本书时，才在 books 表中创建新记录
+            // 6️⃣ 创建新书（不传 rating，由触发器根据 reviews 自动计算）
             if (!targetBookId) {
                 const tropes = form.tropesInput.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5);
 
@@ -158,7 +173,6 @@ export function useBookForm(initialTitle = '') {
                     seriesposition: form.seriesPosition ? parseFloat(form.seriesPosition) : null,
                     subgenre: form.subgenre.trim() || null,
                     cover: form.cover.trim() || null,
-                    rating: parseFloat(form.rating) || 0,
                     spice: parseInt(form.spice, 10) || 0,
                     tropes_0: tropes[0] || null,
                     tropes_1: tropes[1] || null,
@@ -177,7 +191,23 @@ export function useBookForm(initialTitle = '') {
                 targetBookId = newBook.id;
             }
 
-            // 5. 插入该书到当前用户的个人书房状态 (user_favorites & user_book_status)
+            // 7️⃣ 如果有评分且填了评论，写入 public.reviews 表
+            if (userRating > 0 && targetBookId) {
+                const { error: reviewError } = await supabase
+                    .from('reviews')
+                    .insert({
+                        book_id: targetBookId,
+                        reviewer_id: user.id,
+                        rating: userRating,
+                        body: form.tropesInput.trim() || null,
+                    });
+
+                if (reviewError) {
+                    console.error('Failed to create initial review:', reviewError);
+                }
+            }
+
+            // 8️⃣ 写入个人书房
             if (form.fave) {
                 await supabase
                     .from('user_favorites')
@@ -195,6 +225,13 @@ export function useBookForm(initialTitle = '') {
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id,book_id' });
 
+            toast.success('Book added to library!', {
+                style: {
+                    background: 'var(--bg-card)',
+                    color: 'var(--secondary)',
+                    border: '1px solid var(--secondary)',
+                }
+            });
             setForm(initialFormState);
             onSuccess?.();
         } catch (err: any) {

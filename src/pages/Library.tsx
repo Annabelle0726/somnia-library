@@ -23,58 +23,56 @@ export function Library() {
     // 提取为独立的 fetch 函数，方便在新增书籍后调用刷新
     const { user } = useAuth();
     const userId = user?.id;
-    const fetchBooks = useCallback(async () => {
-        if (!userId) {
-            setBooks([]);
-            setLoading(false);
-            return;
-        }
 
+    const fetchBooks = useCallback(async () => {
         setLoading(true);
         try {
-            // 1. 直接查询 books 表中所有由当前用户创建的书籍
-            const { data: myBooks, error: booksError } = await supabase
+            // 1. 无条件获取公共书库中的所有图书
+            const { data: allBooks, error: booksError } = await supabase
                 .from('books')
                 .select('*')
-                .or(`created_by.eq.${userId},created_by.is.null`) // ⚡ 关键：按 created_by 获取当前用户添加的所有书
                 .order('created_at', { ascending: false });
 
             if (booksError) {
-                console.error('Failed to fetch user created books:', booksError);
+                console.error('Failed to fetch books:', booksError);
                 return;
             }
 
-            if (!myBooks || myBooks.length === 0) {
+            if (!allBooks || allBooks.length === 0) {
                 setBooks([]);
                 return;
             }
 
-            const bookIds = myBooks.map((b) => b.id);
+            const bookIds = allBooks.map((b) => b.id);
 
-            // 2. 并行获取这些书的个人阅读状态 (user_book_status)
-            const { data: statusData } = await supabase
-                .from('user_book_status')
-                .select('book_id, status, progress')
-                .eq('user_id', userId)
-                .in('book_id', bookIds);
+            let statusMap = new Map();
+            let faveSet = new Set();
 
-            // 3. 并行获取这些书的个人收藏状态 (user_favorites)
-            const { data: faveData } = await supabase
-                .from('user_favorites')
-                .select('book_id')
-                .eq('user_id', userId)
-                .in('book_id', bookIds);
+            // 2. 查询当前用户的状态与收藏
+            if (userId) {
+                const { data: statusData } = await supabase
+                    .from('user_book_status')
+                    .select('book_id, status, progress')
+                    .eq('user_id', userId)
+                    .in('book_id', bookIds);
 
-            // 转为 Quick Lookup Map
-            const statusMap = new Map(statusData?.map((s) => [s.book_id, s]) || []);
-            const faveSet = new Set(faveData?.map((f) => f.book_id) || []);
+                const { data: faveData } = await supabase
+                    .from('user_favorites')
+                    .select('book_id')
+                    .eq('user_id', userId)
+                    .in('book_id', bookIds);
 
-            // 4. 将图书元数据与个人状态拼装成最终的 BookWithUserData
-            const formattedBooks: BookWithUserData[] = myBooks.map((book) => {
+                statusMap = new Map(statusData?.map((s) => [s.book_id, s]) || []);
+                faveSet = new Set(faveData?.map((f) => f.book_id) || []);
+            }
+
+            // 3. 拼装个人状态
+            const formattedBooks: BookWithUserData[] = allBooks.map((book) => {
                 const userStatusObj = statusMap.get(book.id);
                 return {
                     ...book,
-                    user_status: userStatusObj?.status || 'want_to_read', // 如果没有单独设置状态，默认显示 want_to_read
+                    // 💡 修复：没有记录时不要默认写 'want_to_read'，保持 undefined 或 null
+                    user_status: userStatusObj?.status,
                     progress: userStatusObj?.progress || 0,
                     is_fave: faveSet.has(book.id),
                     tropes: [
@@ -87,7 +85,34 @@ export function Library() {
                 };
             });
 
-            setBooks(formattedBooks);
+            // 4. 🔥 自定义排序：Fave 优先 -> 状态优先 -> 创建时间倒序
+            const sortedBooks = [...formattedBooks].sort((a, b) => {
+                // 1️⃣ 优先：已收藏 (is_fave = true) 绝对排在最前面
+                if (a.is_fave !== b.is_fave) {
+                    return a.is_fave ? -1 : 1;
+                }
+
+                // 2️⃣ 次优：按阅读状态排序 (Reading > Want to read > Read > Abandoned)
+                const statusPriority: Record<string, number> = {
+                    reading: 1,
+                    want_to_read: 2,
+                    read: 3,
+                    abandoned: 4,
+                };
+
+                const priorityA = statusPriority[a.user_status || ''] || 99;
+                const priorityB = statusPriority[b.user_status || ''] || 99;
+
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB;
+                }
+
+                // 3️⃣ 保底：保持原有的创建时间倒序
+                return 0;
+            });
+
+            // 💡 修复：只保留 setBooks(sortedBooks)
+            setBooks(sortedBooks);
         } catch (err) {
             console.error('Error fetching library:', err);
         } finally {
