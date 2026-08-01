@@ -1,11 +1,11 @@
 // src/components/library/BookDetailModal.tsx
-import React, {useState, useEffect} from 'react';
-import type {BookWithUserData, ReadingStatus, BookReview} from '../../types/book';
-import {useAuth} from '../../auth/useAuth';
-import {supabase} from '../../lib/supabase';
+import React, { useState, useEffect } from 'react';
+import type { BookWithUserData, ReadingStatus, BookReview } from '../../types/book';
+import { useAuth } from '../../auth/useAuth';
+import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
-import {BookSynopsis} from './BookSynopsis';
-import {BookReaderModal} from './BookReaderModal';
+import { BookSynopsis } from './BookSynopsis';
+import { BookReaderModal } from './BookReaderModal';
 
 interface BookDetailModalProps {
     book: BookWithUserData;
@@ -13,8 +13,8 @@ interface BookDetailModalProps {
     onUpdate?: (updatedBook: BookWithUserData) => void;
 }
 
-export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, onUpdate}) => {
-    const {user} = useAuth();
+export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose, onUpdate }) => {
+    const { user } = useAuth();
     const userId = user?.id;
 
     // 状态管理
@@ -35,6 +35,11 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
     const [bookDescription, setBookDescription] = useState<string | null>(null);
     const [olKey, setOlKey] = useState<string | null>(null);
     const [activeReaderUrl, setActiveReaderUrl] = useState<string | null>(null);
+
+    // ⚡ 根据 ISBN 动态计算 Amazon 购买/搜索链接
+    const amazonUrl = book.isbn
+        ? `https://www.amazon.com/s?k=${encodeURIComponent(book.isbn.trim())}`
+        : null;
 
     // ESC 关闭
     useEffect(() => {
@@ -89,7 +94,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
 
         async function fetchUserReview() {
             try {
-                const {data} = await supabase
+                const { data } = await supabase
                     .from('reviews')
                     .select('*')
                     .eq('book_id', book.id)
@@ -114,7 +119,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
         if (newRating > 0 && !newBody.trim()) {
             toast.error('Please write a short review before saving your rating!', {
                 duration: 3000,
-                style: {background: '#1f2937', color: '#fbbf24', border: '1px solid #f59e0b'},
+                style: { background: '#1f2937', color: '#fbbf24', border: '1px solid #f59e0b' },
                 icon: '✍️',
             });
             return;
@@ -133,15 +138,15 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                 body: newBody.trim() || null,
             };
 
-            const {data: reviewData, error: reviewErr} = await supabase
+            const { data: reviewData, error: reviewErr } = await supabase
                 .from('reviews')
-                .upsert(payload, {onConflict: 'book_id,reviewer_id'})
+                .upsert(payload, { onConflict: 'book_id,reviewer_id' })
                 .select()
                 .single();
 
             if (reviewErr) throw reviewErr;
 
-            const {data: updatedBook} = await supabase
+            const { data: updatedBook } = await supabase
                 .from('books')
                 .select('rating')
                 .eq('id', book.id)
@@ -184,7 +189,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
 
         try {
             if (nextFaveState) {
-                await supabase.from('user_favorites').insert({user_id: user.id, book_id: book.id});
+                await supabase.from('user_favorites').insert({ user_id: user.id, book_id: book.id });
             } else {
                 await supabase.from('user_favorites').delete().eq('user_id', user.id).eq('book_id', book.id);
             }
@@ -217,7 +222,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                     status: newStatus,
                     progress: newProgress,
                     updated_at: new Date().toISOString()
-                }, {onConflict: 'user_id,book_id'});
+                }, { onConflict: 'user_id,book_id' });
             }
             onUpdate?.({
                 ...book,
@@ -233,41 +238,33 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
     };
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden animate-in fade-in duration-200">
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={onClose}/>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden animate-in fade-in duration-200">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
             <div
                 className="relative z-10 w-full max-w-4xl bg-card border border-line/80 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[88vh] animate-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* 左侧海报 */}
-                <div
-                    className="relative w-full md:w-[45%] bg-bg2 flex flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-line/40 shrink-0 select-none">
-                    <div
-                        className="relative aspect-[2/3] w-4/5 max-w-[260px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                <div className="relative w-full md:w-[45%] bg-bg2 flex flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-line/40 shrink-0 select-none">
+                    <div className="relative aspect-[2/3] w-4/5 max-w-[260px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                         {book.cover ? (
-                            <img src={book.cover} alt={book.title} className="w-full h-full object-cover"/>
+                            <img src={book.cover} alt={book.title} className="w-full h-full object-cover" />
                         ) : (
-                            <div
-                                className="w-full h-full bg-gradient-to-br from-bg2 to-card flex items-center justify-center text-6xl">📖</div>
+                            <div className="w-full h-full bg-gradient-to-br from-bg2 to-card flex items-center justify-center text-6xl">📖</div>
                         )}
                         {status !== 'unread' && (
-                            <div
-                                className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/70 text-white border border-white/20 backdrop-blur-md font-mono">
+                            <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/70 text-white border border-white/20 backdrop-blur-md font-mono">
                                 {status.replace(/_/g, ' ')}
                             </div>
                         )}
                     </div>
 
                     <div className="mt-6 flex items-center gap-4 text-sm font-mono">
-                        <div
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-amber-400 font-bold">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-amber-400 font-bold">
                             <span>★</span> {book.rating ? Number(book.rating).toFixed(2) : 'N/A'}
                         </div>
-                        <div
-                            className="flex items-center gap-1 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-rose-400 font-bold"
-                            title="Spice Level">
+                        <div className="flex items-center gap-1 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-rose-400 font-bold" title="Spice Level">
                             <span>🌶️</span> {book.spice || 0} / 5
                         </div>
                     </div>
@@ -281,9 +278,26 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                                 {book.subgenre || 'General Fiction'} {book.series ? `✦ ${book.series} #${book.seriesposition || ''}` : ''}
                             </div>
                             <h2 className="text-2xl sm:text-3xl font-bold font-display text-ink leading-tight">{book.title}</h2>
-                            <p className="text-sm font-medium text-muted">
-                                by <span className="text-ink font-semibold">{book.author || 'Unknown'}</span>
-                            </p>
+
+                            <div className="flex items-center gap-3 pt-1 flex-wrap">
+                                <p className="text-sm font-medium text-muted">
+                                    by <span className="text-ink font-semibold">{book.author || 'Unknown'}</span>
+                                </p>
+
+                                {/* 🛒 动态生成的 Amazon 购买按钮 */}
+                                {amazonUrl && (
+                                    <a
+                                        href={amazonUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded-full text-[11px] font-mono font-bold transition-all"
+                                        title={`Search ISBN ${book.isbn} on Amazon`}
+                                    >
+                                        <span>🛒 Buy on Amazon</span>
+                                        <span className="text-[9px]">↗</span>
+                                    </a>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
@@ -297,8 +311,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                      fill={isFave ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"
                                      className="w-4 h-4">
-                                    <path
-                                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
                                 </svg>
                             </button>
                             <button onClick={onClose}
@@ -321,8 +334,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                         {/* Tropes 墙 */}
                         {book.tropes && book.tropes.length > 0 && (
                             <div className="space-y-2">
-                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Featured
-                                    Tropes</h4>
+                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Featured Tropes</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {book.tropes.map((t, idx) => (
                                         <span key={idx}
@@ -337,10 +349,8 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                         {/* 阅读进度 */}
                         <div className="p-4 rounded-2xl bg-bg2/60 border border-line space-y-4">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-ink uppercase tracking-wider font-mono">Your
-                                    Reading Journey</label>
-                                {loading && <span
-                                    className="text-[10px] text-tertiary animate-pulse font-mono">Syncing...</span>}
+                                <label className="text-xs font-bold text-ink uppercase tracking-wider font-mono">Your Reading Journey</label>
+                                {loading && <span className="text-[10px] text-tertiary animate-pulse font-mono">Syncing...</span>}
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
@@ -348,7 +358,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                                     <select
                                         value={status}
                                         onChange={(e) => handleSaveStatus(e.target.value as any, progress)}
-                                        className="w-full px-3 py-2 bg-card border border-line rounded-xl text-xs font-bold text-ink focus:outline-none"
+                                        className="w-full px-3 py-2 bg-card border border-line rounded-xl text-xs font-bold text-ink focus:outline-none cursor-pointer"
                                     >
                                         <option value="unread">Not Started</option>
                                         <option value="want_to_read">Want to Read (TBR)</option>
@@ -377,14 +387,11 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                         {/* 笔记与评分 */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Personal
-                                    Journal & Review</h4>
-                                {reviewSuccessMsg && <span
-                                    className="text-xs font-bold text-emerald-400 font-mono">✓ {reviewSuccessMsg}</span>}
+                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Personal Journal & Review</h4>
+                                {reviewSuccessMsg && <span className="text-xs font-bold text-emerald-400 font-mono">✓ {reviewSuccessMsg}</span>}
                             </div>
 
-                            <div
-                                className="p-3 bg-bg2/40 border border-line rounded-xl flex items-center justify-between">
+                            <div className="p-3 bg-bg2/40 border border-line rounded-xl flex items-center justify-between">
                                 <span className="text-xs font-medium text-muted">Your Rating:</span>
                                 <div className="flex items-center gap-1">
                                     {[1, 2, 3, 4, 5].map((star) => (
@@ -396,7 +403,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                                                 setUserRating(nextRating);
                                                 handleSaveReview(nextRating, reviewBody);
                                             }}
-                                            className={`text-lg transition-transform hover:scale-125 ${star <= userRating ? 'text-amber-400' : 'text-muted/30'}`}
+                                            className={`text-lg transition-transform hover:scale-125 cursor-pointer ${star <= userRating ? 'text-amber-400' : 'text-muted/30'}`}
                                         >
                                             ★
                                         </button>
@@ -417,7 +424,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                                         type="button"
                                         onClick={() => handleSaveReview(userRating, reviewBody)}
                                         disabled={savingReview}
-                                        className="px-4 py-1.5 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30 rounded-lg text-xs font-mono font-bold"
+                                        className="px-4 py-1.5 bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30 rounded-lg text-xs font-mono font-bold cursor-pointer"
                                     >
                                         {savingReview ? 'Saving...' : 'Save Review'}
                                     </button>

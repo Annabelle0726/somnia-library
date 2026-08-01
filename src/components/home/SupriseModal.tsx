@@ -20,7 +20,7 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
     const [currentBook, setCurrentBook] = useState<BookWithUserData | null>(initialBook);
     const [isRolling, setIsRolling] = useState<boolean>(false);
 
-    // ⚡ 内部兜底：过滤掉 abandoned 状态的书
+    // Filter out abandoned books as a fallback
     const activePool = pool.filter((b) => b.user_status !== 'abandoned');
 
     useEffect(() => {
@@ -32,33 +32,34 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
 
     if (!isOpen || !currentBook) return null;
 
-    // ⚡ 循环重新抽卡逻辑
+    // Reroll selection logic
     const handleRollAgain = () => {
         if (isRolling || activePool.length === 0) return;
         setIsRolling(true);
 
-        // 优先在未抽中（排除当前这本）的可用书池里抽
-        const availablePool = activePool.length > 1
+        // Exclude current book if pool size allows
+        const availablePool = (activePool.length > 1 && currentBook)
             ? activePool.filter((b) => b.id !== currentBook.id)
             : activePool;
 
         setTimeout(() => {
             const randomIndex = Math.floor(Math.random() * availablePool.length);
-            setCurrentBook(availablePool[randomIndex]);
+            setCurrentBook(availablePool[randomIndex] || currentBook);
             setIsRolling(false);
         }, 500);
     };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden animate-in fade-in duration-200">
-            {/* 背景遮罩 */}
+            {/* Backdrop overlay */}
             <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
-            {/* 卡片主体 */}
+            {/* Modal card container */}
             <div
                 className="relative z-10 w-full max-w-md bg-gradient-to-b from-card via-bg2 to-card border border-line/80 rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col items-center text-center space-y-6 animate-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* 顶部标题与关闭 */}
+                {/* Header and close button */}
                 <div className="w-full flex items-center justify-between border-b border-line/40 pb-4">
                     <div className="flex items-center gap-2">
                         <span className="text-lg">🎲</span>
@@ -74,7 +75,7 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
                     </button>
                 </div>
 
-                {/* 图书展示区 / Rolling 加载态 */}
+                {/* Book display area / Rolling state */}
                 <div className="w-full py-4 flex flex-col items-center justify-center min-h-[260px]">
                     {isRolling ? (
                         <div className="flex flex-col items-center space-y-3 py-10">
@@ -85,7 +86,7 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
                         </div>
                     ) : (
                         <div className="flex flex-col items-center space-y-4 animate-in zoom-in-90 duration-300">
-                            {/* 封面 */}
+                            {/* Book cover */}
                             <div className="relative aspect-[2/3] w-32 rounded-xl overflow-hidden shadow-2xl border border-white/10 group">
                                 {currentBook.cover ? (
                                     <img
@@ -100,7 +101,7 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
                                 )}
                             </div>
 
-                            {/* 书名 & 作者 */}
+                            {/* Title and author */}
                             <div className="space-y-1 max-w-xs">
                                 <h3 className="font-display font-bold text-xl text-ink line-clamp-1">
                                     {currentBook.title}
@@ -110,7 +111,7 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
                                 </p>
                             </div>
 
-                            {/* 标签 */}
+                            {/* Metrics and badges */}
                             <div className="flex items-center gap-3 text-xs font-mono text-muted bg-card/60 px-3 py-1.5 rounded-full border border-line">
                                 <span>★ {currentBook.rating ? Number(currentBook.rating).toFixed(1) : 'N/A'}</span>
                                 <span>•</span>
@@ -120,9 +121,9 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
                     )}
                 </div>
 
-                {/* 底部 2 个核心操作按钮 */}
+                {/* Bottom action buttons */}
                 <div className="w-full grid grid-cols-2 gap-3 pt-2">
-                    {/* 再抽一次 */}
+                    {/* Roll again button */}
                     <button
                         onClick={handleRollAgain}
                         disabled={isRolling}
@@ -132,7 +133,7 @@ export const SurpriseModal: React.FC<SurpriseModalProps> = ({
                         Roll Again
                     </button>
 
-                    {/* 打开这本看详情 */}
+                    {/* View details button */}
                     <button
                         onClick={() => {
                             onClose();
