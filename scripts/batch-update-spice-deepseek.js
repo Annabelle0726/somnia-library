@@ -9,8 +9,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
-// 环境变量检查
-console.log('🔧 环境变量检查:');
+// Environment variable checks
+console.log('🔧 Checking Environment Variables:');
 console.log('  SUPABASE_URL:', process.env.VITE_SUPABASE_URL ? '✓' : '✗');
 console.log('  SUPABASE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✓' : '✗');
 console.log('  DEEPSEEK_KEY:', process.env.VITE_DEEPSEEK_API_KEY ? '✓' : '✗');
@@ -21,7 +21,7 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!DEEPSEEK_API_KEY || !SUPABASE_URL || !SUPABASE_KEY) {
-    console.error('❌ 缺少必要的环境变量');
+    console.error('❌ Missing required environment variables');
     process.exit(1);
 }
 
@@ -35,9 +35,9 @@ const CONFIG = {
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// 🔧 测试 DeepSeek API 连接
+// 🔧 Test DeepSeek API Connection
 async function testDeepSeek() {
-    console.log('🔍 测试 DeepSeek API...');
+    console.log('🔍 Testing DeepSeek API...');
     try {
         const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
@@ -54,28 +54,28 @@ async function testDeepSeek() {
 
         if (!res.ok) {
             const err = await res.json();
-            console.error('  ✗ 失败:', JSON.stringify(err));
+            console.error('  ✗ Failed:', JSON.stringify(err));
             return false;
         }
 
         const data = await res.json();
-        console.log('  ✓ 成功:', data.choices?.[0]?.message?.content);
+        console.log('  ✓ Success:', data.choices?.[0]?.message?.content);
         return true;
     } catch (e) {
-        console.error('  ✗ 网络错误:', e.message);
+        console.error('  ✗ Network error:', e.message);
         return false;
     }
 }
 
-// 获取书籍简介
+// Fetch book description
 async function getBookDescription(title, author) {
     try {
         const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(title)}&limit=3&fields=key,title,author_name,description`;
         const res = await fetch(url);
 
-        // 🔧 检查 HTTP 状态
+        // Check HTTP status
         if (!res.ok) {
-            console.error(`  ⚠ Open Library 返回 ${res.status}`);
+            console.error(`  ⚠ Open Library returned status ${res.status}`);
             return '';
         }
 
@@ -103,15 +103,15 @@ async function getBookDescription(title, author) {
                 }
             }
         } else {
-            console.error(`  ⚠ Open Library 返回 0 个结果`);
+            console.error(`  ⚠ Open Library returned 0 results`);
         }
     } catch (error) {
-        console.error(`  ⚠ Open Library 失败: ${error.message}`);
+        console.error(`  ⚠ Open Library failed: ${error.message}`);
     }
     return '';
 }
 
-// 🔧 DeepSeek 版本的评估函数（正确的请求格式）
+// 🔧 DeepSeek evaluation function (formatted for API)
 async function evaluateSpice(title, author, description, retryCount = 0) {
     const prompt = `Rate this book's explicit/romance content level (spice level) on a scale of 0-5.
 
@@ -129,7 +129,6 @@ ${description ? `\nDescription: ${description}` : ''}
 Return ONLY a JSON object: {"spice": number, "reasoning": "brief explanation"}`;
 
     try {
-        // 🔧 DeepSeek 正确的请求格式
         const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -156,17 +155,16 @@ Return ONLY a JSON object: {"spice": number, "reasoning": "brief explanation"}`;
 
         if (!res.ok) {
             const err = await res.json();
-            throw new Error(`DeepSeek 错误 (${res.status}): ${JSON.stringify(err)}`);
+            throw new Error(`DeepSeek Error (${res.status}): ${JSON.stringify(err)}`);
         }
 
         const data = await res.json();
         const content = data.choices?.[0]?.message?.content;
 
         if (!content) {
-            throw new Error('DeepSeek 返回空内容');
+            throw new Error('DeepSeek returned empty content');
         }
 
-        // 解析 JSON
         const result = JSON.parse(content);
 
         if (typeof result.spice === 'number' && result.spice >= 0 && result.spice <= 5) {
@@ -176,13 +174,13 @@ Return ONLY a JSON object: {"spice": number, "reasoning": "brief explanation"}`;
             };
         }
 
-        throw new Error(`无效的 spice 值: ${result.spice}`);
+        throw new Error(`Invalid spice value: ${result.spice}`);
 
     } catch (error) {
-        console.error(`  ✗ 评估失败: ${error.message}`);
+        console.error(`  ✗ Evaluation failed: ${error.message}`);
 
         if (retryCount < CONFIG.MAX_RETRIES) {
-            console.log(`  🔄 重试 (${retryCount + 1}/${CONFIG.MAX_RETRIES})...`);
+            console.log(`  🔄 Retrying (${retryCount + 1}/${CONFIG.MAX_RETRIES})...`);
             await sleep(1000);
             return evaluateSpice(title, author, description, retryCount + 1);
         }
@@ -191,7 +189,7 @@ Return ONLY a JSON object: {"spice": number, "reasoning": "brief explanation"}`;
     }
 }
 
-// 更新数据库
+// Update database records
 async function updateBookSpice(bookId, spice, reasoning) {
     const { error } = await supabase
         .from('books')
@@ -202,27 +200,25 @@ async function updateBookSpice(bookId, spice, reasoning) {
         .eq('id', bookId);
 
     if (error) {
-        console.error(`  ✗ 更新失败: ${error.message}`);
+        console.error(`  ✗ Update failed: ${error.message}`);
         return false;
     }
 
-    console.log(`  💾 已保存: spice=${spice}`);
+    console.log(`  💾 Saved: spice=${spice}`);
     return true;
 }
 
-// 主函数
+// Main execution loop
 async function main() {
-    console.log('🌶️  Spice 批量评估 (DeepSeek)\n');
+    console.log('🌶️  Batch Spice Evaluation (DeepSeek)\n');
 
-    // 先测试 API
     const apiOk = await testDeepSeek();
     if (!apiOk) {
-        console.error('\n❌ DeepSeek API 不可用，请检查 API Key 和余额');
-        console.error('   免费版需要充值（最低 $1）: https://platform.deepseek.com/');
+        console.error('\n❌ DeepSeek API unavailable. Check API key and account balance.');
         process.exit(1);
     }
 
-    console.log('\n📚 查询未评估的书籍...\n');
+    console.log('\n📚 Fetching un-evaluated books...\n');
 
     const { data: books } = await supabase
         .from('books')
@@ -232,21 +228,21 @@ async function main() {
         .limit(CONFIG.LIMIT);
 
     if (!books || books.length === 0) {
-        console.log('✅ 没有需要评估的书籍');
+        console.log('✅ No books require evaluation');
         process.exit(0);
     }
 
-    console.log(`📊 处理 ${books.length} 本\n`);
+    console.log(`📊 Processing ${books.length} books\n`);
 
     let success = 0, failed = 0;
 
     for (let i = 0; i < books.length; i++) {
         const book = books[i];
         console.log(`[${i + 1}/${books.length}] "${book.title}"`);
-        console.log(`  作者: ${book.author || 'Unknown'}`);
+        console.log(`  Author: ${book.author || 'Unknown'}`);
 
         const desc = await getBookDescription(book.title, book.author);
-        console.log(`  ${desc ? `✓ 简介 (${desc.length}字)` : '⚠ 无简介'}`);
+        console.log(`  ${desc ? `✓ Description fetched (${desc.length} chars)` : '⚠ No description'}`);
 
         const eval_ = await evaluateSpice(book.title, book.author, desc);
 
@@ -268,7 +264,7 @@ async function main() {
     }
 
     console.log('='.repeat(50));
-    console.log(`✅ 成功: ${success}  |  ❌ 失败: ${failed}`);
+    console.log(`✅ Successful: ${success}  |  ❌ Failed: ${failed}`);
     console.log('='.repeat(50));
 }
 
