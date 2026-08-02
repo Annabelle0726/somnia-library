@@ -16,6 +16,7 @@ export interface Book {
     cover: string | null;
     created_at?: string;
 
+    spice_reasoning: string | null;
     tropes_0?: string | null;
     tropes_1?: string | null;
     tropes_2?: string | null;
