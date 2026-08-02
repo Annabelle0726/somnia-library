@@ -7,12 +7,24 @@ import { AddBookModal } from '../components/library/AddBookModal';
 import { useAuth } from "../auth/useAuth.ts";
 import { BookDetailModal } from "../components/library/BookDetailModal.tsx";
 
+// 定义排序类型
+type SortOption = 'default' | 'rating_desc' | 'spice_desc' | 'spice_asc' | 'title_asc';
+// 定义辣度筛选类型
+type SpiceFilterOption = 'all' | '0' | '1-2' | '3-4' | '5';
+// 定义评分筛选类型
+type RatingFilterOption = 'all' | '4plus' | '3plus';
+
 export function Library() {
     const [books, setBooks] = useState<BookWithUserData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [searchQuery, setSearchQuery] = useState<string>('');
 
-    // 分页配置 (从默认 12 改为 15，在 5 列布局下刚好 3 行)
+    // 🎛️ 新增：排序与筛选状态
+    const [sortBy, setSortBy] = useState<SortOption>('default');
+    const [spiceFilter, setSpiceFilter] = useState<SpiceFilterOption>('all');
+    const [ratingFilter, setRatingFilter] = useState<RatingFilterOption>('all');
+
+    // 分页配置 (在 5 列布局下刚好 3 行)
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [itemsPerPage] = useState<number>(15);
 
@@ -20,19 +32,16 @@ export function Library() {
     const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
     const [selectedBook, setSelectedBook] = useState<BookWithUserData | null>(null);
 
-    // 提取为独立的 fetch 函数，方便在新增书籍后调用刷新
     const { user } = useAuth();
     const userId = user?.id;
 
-    // 排序辅助函数（确保收藏与状态排序一致）
-    const sortBooks = (bookList: BookWithUserData[]) => {
+    // 基础默认排序逻辑（Favorites > Reading Status > Created Time）
+    const sortBooksDefault = (bookList: BookWithUserData[]) => {
         return [...bookList].sort((a, b) => {
-            // 1️⃣ 优先：已收藏 (is_fave = true) 绝对排在最前面
             if (a.is_fave !== b.is_fave) {
                 return a.is_fave ? -1 : 1;
             }
 
-            // 2️⃣ 次优：按阅读状态排序 (Reading > Want to read > Read > Abandoned)
             const statusPriority: Record<string, number> = {
                 reading: 1,
                 want_to_read: 2,
@@ -47,7 +56,6 @@ export function Library() {
                 return priorityA - priorityB;
             }
 
-            // 3️⃣ 保底：保持原有的创建时间倒序
             return 0;
         });
     };
@@ -55,7 +63,6 @@ export function Library() {
     const fetchBooks = useCallback(async () => {
         setLoading(true);
         try {
-            // 1. 无条件获取公共书库中的所有图书
             const { data: allBooks, error: booksError } = await supabase
                 .from('books')
                 .select('*')
@@ -76,7 +83,6 @@ export function Library() {
             let statusMap = new Map();
             let faveSet = new Set();
 
-            // 2. 查询当前用户的状态与收藏
             if (userId) {
                 const { data: statusData } = await supabase
                     .from('user_book_status')
@@ -94,7 +100,6 @@ export function Library() {
                 faveSet = new Set(faveData?.map((f) => f.book_id) || []);
             }
 
-            // 3. 拼装个人状态
             const formattedBooks: BookWithUserData[] = allBooks.map((book) => {
                 const userStatusObj = statusMap.get(book.id);
                 return {
@@ -112,8 +117,7 @@ export function Library() {
                 };
             });
 
-            // 4. 自定义排序
-            setBooks(sortBooks(formattedBooks));
+            setBooks(sortBooksDefault(formattedBooks));
         } catch (err) {
             console.error('Error fetching library:', err);
         } finally {
@@ -125,83 +129,207 @@ export function Library() {
         fetchBooks();
     }, [fetchBooks]);
 
-    // 🌟 核心修复点：处理单张卡片的收藏状态切换，同步更新 Library 全局状态并重新排序
     const handleFavoriteToggle = useCallback((bookId: string, isFave: boolean) => {
         setBooks((prevBooks) => {
             const updated = prevBooks.map((b) =>
                 b.id === bookId ? { ...b, is_fave: isFave } : b
             );
-            return sortBooks(updated);
+            return sortBooksDefault(updated);
         });
     }, []);
 
-    // 搜索过滤
-    const filteredBooks = useMemo(() => {
-        if (!searchQuery.trim()) return books;
-        const q = searchQuery.toLowerCase().trim();
-        return books.filter(
-            (b) =>
-                b.title?.toLowerCase().includes(q) ||
-                b.author?.toLowerCase().includes(q) ||
-                b.series?.toLowerCase().includes(q) ||
-                b.subgenre?.toLowerCase().includes(q) ||
-                b.isbn?.toLowerCase().includes(q)
-        );
-    }, [books, searchQuery]);
+    // 🔍 核心逻辑：结合搜索 + 筛选 (Spice/Rating) + 动态排序 (SortBy)
+    const processedBooks = useMemo(() => {
+        let result = [...books];
 
+        // 1. 文本搜索过滤
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase().trim();
+            result = result.filter(
+                (b) =>
+                    b.title?.toLowerCase().includes(q) ||
+                    b.isbn?.toLowerCase().includes(q) ||
+                    b.author?.toLowerCase().includes(q) ||
+                    b.series?.toLowerCase().includes(q) ||
+                    b.subgenre?.toLowerCase().includes(q)
+            );
+        }
+
+        // 2. 🌶️ Spice Level 筛选
+        if (spiceFilter !== 'all') {
+            result = result.filter((b) => {
+                const s = b.spice ?? 0;
+                if (spiceFilter === '0') return s === 0;
+                if (spiceFilter === '1-2') return s >= 1 && s <= 2;
+                if (spiceFilter === '3-4') return s >= 3 && s <= 4;
+                if (spiceFilter === '5') return s === 5;
+                return true;
+            });
+        }
+
+        // 3. ★ Rating 筛选
+        if (ratingFilter !== 'all') {
+            result = result.filter((b) => {
+                const r = Number(b.rating) || 0;
+                if (ratingFilter === '4plus') return r >= 4.0;
+                if (ratingFilter === '3plus') return r >= 3.0;
+                return true;
+            });
+        }
+
+        // 4. 🔀 动态排序
+        result.sort((a, b) => {
+            if (sortBy === 'rating_desc') {
+                return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+            }
+            if (sortBy === 'spice_desc') {
+                return (b.spice ?? 0) - (a.spice ?? 0);
+            }
+            if (sortBy === 'spice_asc') {
+                return (a.spice ?? 0) - (b.spice ?? 0);
+            }
+            if (sortBy === 'title_asc') {
+                return a.title.localeCompare(b.title);
+            }
+
+            // 'default': Favorites 优先 -> Status 优先
+            if (a.is_fave !== b.is_fave) return a.is_fave ? -1 : 1;
+            const statusPriority: Record<string, number> = { reading: 1, want_to_read: 2, read: 3, abandoned: 4 };
+            const priorityA = statusPriority[a.user_status || ''] || 99;
+            const priorityB = statusPriority[b.user_status || ''] || 99;
+            return priorityA - priorityB;
+        });
+
+        return result;
+    }, [books, searchQuery, spiceFilter, ratingFilter, sortBy]);
+
+    // 搜索或筛选变化时，重置到第 1 页
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery]);
+    }, [searchQuery, spiceFilter, ratingFilter, sortBy]);
 
     // 分页计算
-    const totalPages = Math.ceil(filteredBooks.length / itemsPerPage) || 1;
+    const totalPages = Math.ceil(processedBooks.length / itemsPerPage) || 1;
     const currentBooks = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return filteredBooks.slice(start, start + itemsPerPage);
-    }, [filteredBooks, currentPage, itemsPerPage]);
+        return processedBooks.slice(start, start + itemsPerPage);
+    }, [processedBooks, currentPage, itemsPerPage]);
+
+    // 重置所有筛选
+    const resetFilters = () => {
+        setSearchQuery('');
+        setSortBy('default');
+        setSpiceFilter('all');
+        setRatingFilter('all');
+    };
+
+    const hasActiveFilters = searchQuery || sortBy !== 'default' || spiceFilter !== 'all' || ratingFilter !== 'all';
 
     return (
-        <div className="flex flex-col gap-8 w-full">
-            {/* 顶部：双层高质感 Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card/60 border border-line/80 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-sm">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-bold text-tertiary uppercase tracking-wider font-[family-name:var(--font-mono)]">
-                        <span>✦ Database Archive</span>
+        <div className="flex flex-col gap-6 w-full">
+            {/* 顶部 Header & 搜索栏 */}
+            <div className="flex flex-col gap-6 bg-card/60 border border-line/80 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs font-bold text-tertiary uppercase tracking-wider font-mono">
+                            <span>✦ Database Archive</span>
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl hero-title font-display font-bold text-ink tracking-tight">
+                            Sanctuary Library
+                        </h1>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl hero-title font-display font-bold text-ink tracking-tight">
-                        Sanctuary Library
-                    </h1>
+
+                    {/* 搜索框与 Add 按钮 */}
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-72">
+                            <span className="absolute inset-y-0 left-3.5 flex items-center text-muted pointer-events-none text-sm">
+                                🔍
+                            </span>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Title, Author, ISBN..."
+                                className="w-full pl-10 pr-8 py-2.5 bg-bg2/90 border border-line rounded-2xl text-xs sm:text-sm text-ink placeholder:text-muted/60 focus:outline-none focus:border-tertiary transition-all shadow-inner"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute inset-y-0 right-3.5 flex items-center text-muted hover:text-ink text-xs"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="px-4 py-2.5 bg-tertiary text-on-primary font-bold text-xs sm:text-sm rounded-2xl shadow-md hover:opacity-90 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                        >
+                            <span>+ Add</span>
+                        </button>
+                    </div>
                 </div>
 
-                {/* 搜索框与新进录入按钮 */}
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-72">
-                        <span className="absolute inset-y-0 left-3.5 flex items-center text-muted pointer-events-none text-sm">
-                            🔍
-                        </span>
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Title, Author, ISBN..."
-                            className="w-full pl-10 pr-8 py-2.5 bg-bg2/90 border border-line rounded-2xl text-xs sm:text-sm text-ink placeholder:text-muted/60 focus:outline-none focus:border-tertiary transition-all shadow-inner"
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                className="absolute inset-y-0 right-3.5 flex items-center text-muted hover:text-ink text-xs"
+                {/* 🎛️ 筛选与排序控制条 (Filter & Sort Bar) */}
+                <div className="pt-4 border-t border-line/40 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        {/* 🌶️ Spice Filter */}
+                        <div className="flex items-center gap-1.5 bg-bg2/80 border border-line/60 rounded-xl px-3 py-1.5">
+                            <span className="text-muted font-medium">🌶️ Spice:</span>
+                            <select
+                                value={spiceFilter}
+                                onChange={(e) => setSpiceFilter(e.target.value as SpiceFilterOption)}
+                                className="bg-transparent text-ink font-bold focus:outline-none cursor-pointer"
                             >
-                                ✕
+                                <option value="all" className="bg-card text-ink">All Levels</option>
+                                <option value="0" className="bg-card text-ink">0 (Clean)</option>
+                                <option value="1-2" className="bg-card text-ink">1 - 2 (Mild)</option>
+                                <option value="3-4" className="bg-card text-ink">3 - 4 (Medium)</option>
+                                <option value="5" className="bg-card text-ink">5 (Explicit)</option>
+                            </select>
+                        </div>
+
+                        {/* ★ Rating Filter */}
+                        <div className="flex items-center gap-1.5 bg-bg2/80 border border-line/60 rounded-xl px-3 py-1.5">
+                            <span className="text-muted font-medium">★ Rating:</span>
+                            <select
+                                value={ratingFilter}
+                                onChange={(e) => setRatingFilter(e.target.value as RatingFilterOption)}
+                                className="bg-transparent text-ink font-bold focus:outline-none cursor-pointer"
+                            >
+                                <option value="all" className="bg-card text-ink">All Ratings</option>
+                                <option value="4plus" className="bg-card text-ink">4.0+ Stars</option>
+                                <option value="3plus" className="bg-card text-ink">3.0+ Stars</option>
+                            </select>
+                        </div>
+
+                        {/* 重置过滤器 */}
+                        {hasActiveFilters && (
+                            <button
+                                onClick={resetFilters}
+                                className="px-2.5 py-1.5 text-[11px] text-rose-400 hover:text-rose-300 underline underline-offset-2 transition-all cursor-pointer"
+                            >
+                                Clear Filters
                             </button>
                         )}
                     </div>
 
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="px-4 py-2.5 bg-tertiary text-on-primary font-bold text-xs sm:text-sm rounded-2xl shadow-md hover:opacity-90 transition-all flex items-center gap-1.5 whitespace-nowrap"
-                    >
-                        <span>+ Add</span>
-                    </button>
+                    {/* 🔀 Sort By Dropdown */}
+                    <div className="flex items-center gap-2 bg-bg2/80 border border-line/60 rounded-xl px-3 py-1.5">
+                        <span className="text-muted font-medium">Sort by:</span>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as SortOption)}
+                            className="bg-transparent text-tertiary font-bold focus:outline-none cursor-pointer"
+                        >
+                            <option value="default" className="bg-card text-ink">Default (Faves & Status)</option>
+                            <option value="spice_desc" className="bg-card text-ink">Spice (High → Low) 🌶️</option>
+                            <option value="spice_asc" className="bg-card text-ink">Spice (Low → High) 🌶️</option>
+                            <option value="rating_desc" className="bg-card text-ink">Rating (High → Low) ★</option>
+                            <option value="title_asc" className="bg-card text-ink">Title (A - Z)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -209,29 +337,31 @@ export function Library() {
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-24 text-muted gap-5">
                     <div className="w-10 h-10 border-2 border-tertiary border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs tracking-widest uppercase font-[family-name:var(--font-mono)]">
+                    <span className="text-xs tracking-widest uppercase font-mono">
                         Unfolding Archives...
                     </span>
                 </div>
-            ) : filteredBooks.length === 0 ? (
+            ) : processedBooks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 px-4 bg-card/40 border border-line/50 rounded-3xl text-center space-y-5 backdrop-blur-sm">
                     <div className="w-16 h-16 rounded-full bg-bg2 flex items-center justify-center text-3xl shadow-inner border border-line/40">
                         📜
                     </div>
                     <div className="space-y-1.5 max-w-md">
                         <h3 className="text-xl font-bold text-ink font-display">
-                            Cannot find {searchQuery}?
+                            No matching titles found
                         </h3>
                         <p className="text-xs text-muted leading-relaxed">
-                            This title has not yet been catalogued into your sanctuary. Would you like to summon it into your archives right now?
+                            No books match your current search queries or filters. Try adjusting your Spice Level, Rating filter, or search term.
                         </p>
                     </div>
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="px-6 py-2.5 bg-primary text-on-primary font-bold text-xs sm:text-sm rounded-2xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all transform hover:-translate-y-0.5"
-                    >
-                        <span>+ Catalogue "{searchQuery || 'New Tome'}"</span>
-                    </button>
+                    {hasActiveFilters && (
+                        <button
+                            onClick={resetFilters}
+                            className="px-6 py-2.5 bg-primary text-on-primary font-bold text-xs sm:text-sm rounded-2xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all cursor-pointer"
+                        >
+                            Clear All Filters
+                        </button>
+                    )}
                 </div>
             ) : (
                 <>
@@ -240,25 +370,23 @@ export function Library() {
                             <BookCard
                                 key={book.id}
                                 book={book}
-                                onEdit={(b) => {
-                                    setSelectedBook(b);
-                                }}
-                                onFavoriteToggle={handleFavoriteToggle} // 🌟 关键：绑定收藏状态切换监听
+                                onEdit={(b) => setSelectedBook(b)}
+                                onFavoriteToggle={handleFavoriteToggle}
                             />
                         ))}
                     </div>
 
                     {/* 翻页栏 */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-line/60 text-xs text-muted font-[family-name:var(--font-mono)]">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-line/60 text-xs text-muted font-mono">
                         <div>
-                            Showing <span className="font-bold text-ink">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-ink">{Math.min(currentPage * itemsPerPage, filteredBooks.length)}</span> of <span className="font-bold text-ink">{filteredBooks.length}</span> titles
+                            Showing <span className="font-bold text-ink">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-ink">{Math.min(currentPage * itemsPerPage, processedBooks.length)}</span> of <span className="font-bold text-ink">{processedBooks.length}</span> titles
                         </div>
 
                         <div className="flex items-center gap-2">
                             <button
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage((p) => p - 1)}
-                                className="px-3.5 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all"
+                                className="px-3.5 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all cursor-pointer"
                             >
                                 ← Prev
                             </button>
@@ -270,7 +398,7 @@ export function Library() {
                             <button
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage((p) => p + 1)}
-                                className="px-3.5 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all"
+                                className="px-3.5 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all cursor-pointer"
                             >
                                 Next →
                             </button>
@@ -285,14 +413,13 @@ export function Library() {
                     onClose={() => setSelectedBook(null)}
                     onUpdate={(updatedBook) => {
                         setBooks((prevBooks) =>
-                            sortBooks(prevBooks.map((b) => (b.id === updatedBook.id ? updatedBook : b)))
+                            sortBooksDefault(prevBooks.map((b) => (b.id === updatedBook.id ? updatedBook : b)))
                         );
                         setSelectedBook(updatedBook);
                     }}
                 />
             )}
 
-            {/* 新增书籍快捷弹窗 */}
             <AddBookModal
                 isOpen={isAddModalOpen}
                 initialTitle={searchQuery}

@@ -15,7 +15,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
     const [isFave, setIsFave] = useState<boolean>(!!book.is_fave);
     const [favLoading, setFavLoading] = useState<boolean>(false);
 
-    // 🛠️ 核心修复 1: 当父组件传入的 book 发生彻底改变（如刷新、导航返回）时，强制刷新本地 state
+    // 当父组件传入的 book 发生彻底改变（如刷新、导航返回）时，强制刷新本地 state
     useEffect(() => {
         setIsFave(!!book.is_fave);
     }, [book.id, book.is_fave]); // 加入 book.id 是保证换了一本书后彻底刷新状态
@@ -49,11 +49,11 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
                 if (error) throw error;
             }
 
-            // 🛠️ 核心修复 2: 操作成功，通知父组件更新全局状态
+            // 操作成功，通知父组件更新全局状态
             onFavoriteToggle?.(book.id, nextFaveState);
         } catch (err) {
             console.error('Failed to update favorite status:', err);
-            // 🛠️ 核心修复 3: 如果数据库报错，不仅本地回滚，还要触发父组件回滚以防万一
+            // 如果数据库报错，不仅本地回滚，还要触发父组件回滚以防万一
             setIsFave(!nextFaveState);
             onFavoriteToggle?.(book.id, !nextFaveState);
         } finally {
