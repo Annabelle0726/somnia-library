@@ -1,10 +1,95 @@
 //src/hooks/useBookForm.ts
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { cleanIsbn, isValidIsbn } from '../lib/isbn';
 import { fetchBookByIsbn } from '../lib/openlibrary';
 import type { ReadingStatus } from '../types/book';
 import toast from "react-hot-toast";
+
+// 🌶️ AI 评估 Spice
+async function evaluateSpice(title: string, author?: string | null, description?: string) {
+    const DEEPSEEK_API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY;
+    if (!DEEPSEEK_API_KEY) {
+        console.warn('VITE_DEEPSEEK_API_KEY is not configured');
+        return null;
+    }
+
+    const prompt = `Rate this book's explicit/romance content level on a scale of 0-5.
+0: No romance, clean. 1: Kissing only. 2: Implied. 3: Moderate detail. 4: Frequent detail. 5: Erotica.
+Book: "${title}"${author ? ` by ${author}` : ''}
+${description ? `Description: ${description}` : ''}
+Return ONLY JSON: {"spice": number, "reasoning": "brief reason"}`;
+
+    try {
+        const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'deepseek-chat',
+                messages: [
+                    { role: 'system', content: 'Return only valid JSON.' },
+                    { role: 'user', content: prompt }
+                ],
+                max_tokens: 150,
+                temperature: 0.3,
+                response_format: { type: 'json_object' }
+            })
+        });
+
+        if (!res.ok) {
+            console.error('DeepSeek API error:', res.status);
+            return null;
+        }
+
+        const data = await res.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (!content) return null;
+
+        const cleaned = content.replace(/```json\s*|\s*```/g, '').trim();
+        const result = JSON.parse(cleaned);
+
+        if (typeof result.spice === 'number' && result.spice >= 0 && result.spice <= 5) {
+            return { spice: Math.round(result.spice), reasoning: result.reasoning || '' };
+        }
+        return null;
+    } catch (e) {
+        console.error('Spice evaluation failed:', e);
+        return null;
+    }
+}
+
+// 📖 获取 Open Library 描述
+async function fetchDescription(title: string, author?: string | null): Promise<string> {
+    try {
+        const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(title)}&limit=3&fields=key,author_name`;
+        const res = await fetch(searchUrl);
+        const data = await res.json();
+        if (!data.docs?.length) return '';
+
+        let bestDoc = null;
+        if (author) {
+            const lower = author.toLowerCase();
+            bestDoc = data.docs.find((d: any) =>
+                d.author_name?.some((a: string) => a.toLowerCase().includes(lower))
+            );
+        }
+        if (!bestDoc) bestDoc = data.docs[0];
+        const workKey = bestDoc?.key;
+        if (!workKey) return '';
+
+        const workUrl = `https://openlibrary.org${workKey}.json`;
+        const workRes = await fetch(workUrl);
+        const workData = await workRes.json();
+        let desc = workData.description;
+        if (typeof desc === 'object' && desc?.value) desc = desc.value;
+        return typeof desc === 'string' ? desc.substring(0, 600) : '';
+    } catch {
+        return '';
+    }
+}
 
 export type BookFormData = {
     isbn: string;
@@ -75,7 +160,10 @@ export function useBookForm(initialTitle = '') {
         }
     };
 
-    const submit = async (onSuccess?: () => void) => {
+    const submit = useCallback(async (
+        onSuccess?: () => void,
+        onSpiceEvaluated?: (spice: number, reasoning: string) => void
+    ) => {
         // 1️⃣ 基础校验
         if (!form.title.trim() || !form.author.trim()) {
             return setErrorMsg('Title and Author are required.');
@@ -85,7 +173,7 @@ export function useBookForm(initialTitle = '') {
             return setErrorMsg('Invalid ISBN. Please check or leave blank.');
         }
 
-        // 2️⃣ 🔥 评分 > 0 时必须写评论（提前拦截，避免创建了书但没创建 review）
+        // 2️⃣ 评分 > 0 时必须写评论
         const userRating = parseFloat(form.rating);
         if (userRating > 0 && !form.tropesInput.trim()) {
             const msg = 'Please write a short review when giving a rating!';
@@ -160,7 +248,7 @@ export function useBookForm(initialTitle = '') {
                 }
             }
 
-            // 6️⃣ 创建新书（不传 rating，由触发器根据 reviews 自动计算）
+            // 6️⃣ 创建新书（spice 默认为 null，留给 AI 后台评估）
             if (!targetBookId) {
                 const tropes = form.tropesInput.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5);
 
@@ -173,7 +261,7 @@ export function useBookForm(initialTitle = '') {
                     seriesposition: form.seriesPosition ? parseFloat(form.seriesPosition) : null,
                     subgenre: form.subgenre.trim() || null,
                     cover: form.cover.trim() || null,
-                    spice: parseInt(form.spice, 10) || 0,
+                    spice: null,
                     tropes_0: tropes[0] || null,
                     tropes_1: tropes[1] || null,
                     tropes_2: tropes[2] || null,
@@ -184,14 +272,36 @@ export function useBookForm(initialTitle = '') {
                 const { data: newBook, error: insertError } = await supabase
                     .from('books')
                     .insert(payload)
-                    .select('id')
+                    .select('id, title, author')
                     .single();
 
                 if (insertError || !newBook) throw insertError || new Error('Failed to create book');
                 targetBookId = newBook.id;
+
+                // 🎯 只有全新创建的书籍，才在后台发起 Spice 评估
+                (async () => {
+                    console.log('🌶️ Starting background spice evaluation for:', newBook.title);
+                    const desc = await fetchDescription(newBook.title, newBook.author);
+                    const result = await evaluateSpice(newBook.title, newBook.author, desc);
+                    if (result) {
+                        const { error: updateError } = await supabase
+                            .from('books')
+                            .update({ spice: result.spice, spice_reasoning: result.reasoning })
+                            .eq('id', newBook.id);
+                        if (updateError) {
+                            console.error('Failed to update spice:', updateError.message);
+                        } else {
+                            console.log(`✅ Spice successfully updated for "${newBook.title}": ${result.spice}/5`);
+                            // ⚡ 通知前端 Spice 更新了，可以触发刷新数据
+                            onSpiceEvaluated?.(result.spice, result.reasoning);
+                        }
+                    } else {
+                        console.log(`⚠ Spice evaluation returned null for "${newBook.title}"`);
+                    }
+                })();
             }
 
-            // 7️⃣ 如果有评分且填了评论，写入 public.reviews 表
+            // 7️⃣ 写入 public.reviews 表
             if (userRating > 0 && targetBookId) {
                 const { error: reviewError } = await supabase
                     .from('reviews')
@@ -239,7 +349,7 @@ export function useBookForm(initialTitle = '') {
         } finally {
             setLoading(false);
         }
-    };
+    }, [form, initialFormState]);
 
     return { form, updateField, loading, errorMsg, fetchingIsbn, fetchByIsbn, submit, setErrorMsg };
 }

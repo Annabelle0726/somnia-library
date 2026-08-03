@@ -1,11 +1,11 @@
 // src/components/library/BookDetailModal.tsx
-import React, {useState, useEffect} from 'react';
-import type {BookWithUserData, ReadingStatus, BookReview} from '../../types/book';
-import {useAuth} from '../../auth/useAuth';
-import {supabase} from '../../lib/supabase';
+import React, { useState, useEffect } from 'react';
+import type { BookWithUserData, ReadingStatus, BookReview } from '../../types/book';
+import { useAuth } from '../../auth/useAuth';
+import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
-import {BookSynopsis} from './BookSynopsis';
-import {BookReaderModal} from './BookReaderModal';
+import { BookSynopsis } from './BookSynopsis';
+import { BookReaderModal } from './BookReaderModal';
 
 interface BookDetailModalProps {
     book: BookWithUserData;
@@ -13,8 +13,8 @@ interface BookDetailModalProps {
     onUpdate?: (updatedBook: BookWithUserData) => void;
 }
 
-export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, onUpdate}) => {
-    const {user} = useAuth();
+export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose, onUpdate }) => {
+    const { user } = useAuth();
     const userId = user?.id;
 
     // 状态管理
@@ -53,6 +53,38 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [onClose]);
+
+    // ⚡ 监听 Supabase Realtime：当后台 DeepSeek 计算完 Spice 写入数据库时，自动实时更新 modal
+    useEffect(() => {
+        if (!book.id) return;
+
+        const channel = supabase
+            .channel(`book-detail-${book.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'books',
+                    filter: `id=eq.${book.id}`,
+                },
+                (payload) => {
+                    if (payload.new) {
+                        const updated = payload.new as any;
+                        onUpdate?.({
+                            ...book,
+                            spice: updated.spice,
+                            spice_reasoning: updated.spice_reasoning,
+                        });
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [book.id, book, onUpdate]);
 
     // 拉取 Open Library 图书简介与 Key
     useEffect(() => {
@@ -93,7 +125,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
 
         async function fetchUserReview() {
             try {
-                const {data} = await supabase
+                const { data } = await supabase
                     .from('reviews')
                     .select('*')
                     .eq('book_id', book.id)
@@ -110,7 +142,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
         }
 
         fetchUserReview();
-    }, [user, book.id]);
+    }, [user, book.id, userId]);
 
     // 保存评论与评分
     const handleSaveReview = async (newRating = userRating, newBody = reviewBody) => {
@@ -141,15 +173,15 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                 body: newBody.trim() || null,
             };
 
-            const {data: reviewData, error: reviewErr} = await supabase
+            const { data: reviewData, error: reviewErr } = await supabase
                 .from('reviews')
-                .upsert(payload, {onConflict: 'book_id,reviewer_id'})
+                .upsert(payload, { onConflict: 'book_id,reviewer_id' })
                 .select()
                 .single();
 
             if (reviewErr) throw reviewErr;
 
-            const {data: updatedBook} = await supabase
+            const { data: updatedBook } = await supabase
                 .from('books')
                 .select('rating')
                 .eq('id', book.id)
@@ -192,7 +224,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
 
         try {
             if (nextFaveState) {
-                await supabase.from('user_favorites').insert({user_id: user.id, book_id: book.id});
+                await supabase.from('user_favorites').insert({ user_id: user.id, book_id: book.id });
             } else {
                 await supabase.from('user_favorites').delete().eq('user_id', user.id).eq('book_id', book.id);
             }
@@ -225,7 +257,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                     status: newStatus,
                     progress: newProgress,
                     updated_at: new Date().toISOString()
-                }, {onConflict: 'user_id,book_id'});
+                }, { onConflict: 'user_id,book_id' });
             }
             onUpdate?.({
                 ...book,
@@ -241,65 +273,64 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
     };
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden animate-in fade-in duration-200">
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={onClose}/>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden animate-in fade-in duration-200">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
 
             <div
                 className="relative z-10 w-full max-w-4xl bg-card border border-line/80 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[88vh] animate-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* 左侧海报 */}
-                <div
-                    className="relative w-full md:w-[45%] bg-bg2 flex flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-line/40 shrink-0 select-none">
-                    <div
-                        className="relative aspect-[2/3] w-4/5 max-w-[260px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                <div className="relative w-full md:w-[45%] bg-bg2 flex flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-line/40 shrink-0 select-none">
+                    <div className="relative aspect-[2/3] w-4/5 max-w-[260px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                         {book.cover ? (
-                            <img src={book.cover} alt={book.title} className="w-full h-full object-cover"/>
+                            <img src={book.cover} alt={book.title} className="w-full h-full object-cover" />
                         ) : (
-                            <div
-                                className="w-full h-full bg-gradient-to-br from-bg2 to-card flex items-center justify-center text-6xl">📖</div>
+                            <div className="w-full h-full bg-gradient-to-br from-bg2 to-card flex items-center justify-center text-6xl">📖</div>
                         )}
                         {status !== 'unread' && (
-                            <div
-                                className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/70 text-white border border-white/20 backdrop-blur-md font-mono">
+                            <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/70 text-white border border-white/20 backdrop-blur-md font-mono">
                                 {status.replace(/_/g, ' ')}
                             </div>
                         )}
                     </div>
 
                     <div className="mt-6 flex items-center gap-4 text-sm font-mono">
-                        <div
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-amber-400 font-bold">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-amber-400 font-bold">
                             <span>★</span> {book.rating ? Number(book.rating).toFixed(2) : 'N/A'}
                         </div>
 
-                        {/* 🌶️ 辣度显示（纯读取数据库） */}
-                        <div
-                            className="relative group flex items-center gap-1 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-rose-400 font-bold cursor-help">
-                            <span>🌶️</span> {book.spice !== null && book.spice !== undefined ? book.spice : '?'} / 5
+                        {/* 🌶️ 辣度显示 (支持 null 显示 Assessing 状态) */}
+                        <div className="relative group flex items-center gap-1 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-rose-400 font-bold cursor-help">
+                            {book.spice === null || book.spice === undefined ? (
+                                <span className="text-[10px] animate-pulse text-amber-400 flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping" />
+                                    Evaluating...
+                                </span>
+                            ) : (
+                                <>
+                                    <span>🌶️</span> {book.spice} / 5
+                                </>
+                            )}
 
                             {/* Hover Tooltip */}
-                            {(book.spice_reasoning || book.spice === null || book.spice === undefined) && (
-                                <div
-                                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-bg border border-primary/30 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
-                                    <div className="text-[10px] text-muted mb-1 leading-relaxed">
-                                        <strong className="text-primary block mb-1">What is Spice Level?</strong>
-                                        Indicates the explicitness of romantic or adult scenes in the book (0 =
-                                        None/Clean, 5 = Highly Explicit).
-                                    </div>
-                                    {book.spice_reasoning && (
-                                        <div
-                                            className="mt-2 pt-2 border-t border-line/50 text-[10px] text-ink italic leading-relaxed">
-                                            <span className="text-primary font-bold mr-1">✦ AI Note:</span>
-                                            {book.spice_reasoning}
-                                        </div>
-                                    )}
-                                    {/* Tooltip 小尾巴 */}
-                                    <div
-                                        className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-primary/30"></div>
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-bg border border-primary/30 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                                <div className="text-[10px] text-muted mb-1 leading-relaxed">
+                                    <strong className="text-primary block mb-1">What is Spice Level?</strong>
+                                    Indicates the explicitness of romantic scenes (0 = Clean, 5 = Erotica).
                                 </div>
-                            )}
+                                {book.spice === null || book.spice === undefined ? (
+                                    <div className="mt-2 pt-2 border-t border-line/50 text-[10px] text-amber-400/90 italic">
+                                        ✦ AI is analyzing this book's content...
+                                    </div>
+                                ) : book.spice_reasoning ? (
+                                    <div className="mt-2 pt-2 border-t border-line/50 text-[10px] text-ink italic leading-relaxed">
+                                        <span className="text-primary font-bold mr-1">✦ AI Note:</span>
+                                        {book.spice_reasoning}
+                                    </div>
+                                ) : null}
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-primary/30"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -344,8 +375,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                      fill={isFave ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"
                                      className="w-4 h-4">
-                                    <path
-                                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
                                 </svg>
                             </button>
                             <button onClick={onClose}
@@ -366,8 +396,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
 
                         {book.tropes && book.tropes.length > 0 && (
                             <div className="space-y-2">
-                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Featured
-                                    Tropes</h4>
+                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Featured Tropes</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {book.tropes.map((t, idx) => (
                                         <span key={idx}
@@ -382,10 +411,8 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                         {/* 阅读进度 */}
                         <div className="p-4 rounded-2xl bg-bg2/60 border border-line space-y-4">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-ink uppercase tracking-wider font-mono">Your
-                                    Reading Journey</label>
-                                {loading && <span
-                                    className="text-[10px] text-tertiary animate-pulse font-mono">Syncing...</span>}
+                                <label className="text-xs font-bold text-ink uppercase tracking-wider font-mono">Your Reading Journey</label>
+                                {loading && <span className="text-[10px] text-tertiary animate-pulse font-mono">Syncing...</span>}
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
@@ -422,14 +449,11 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({book, onClose, 
                         {/* 笔记与评分 */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Personal
-                                    Journal & Review</h4>
-                                {reviewSuccessMsg && <span
-                                    className="text-xs font-bold text-emerald-400 font-mono">✓ {reviewSuccessMsg}</span>}
+                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Personal Journal & Review</h4>
+                                {reviewSuccessMsg && <span className="text-xs font-bold text-emerald-400 font-mono">✓ {reviewSuccessMsg}</span>}
                             </div>
 
-                            <div
-                                className="p-3 bg-bg2/40 border border-line rounded-xl flex items-center justify-between">
+                            <div className="p-3 bg-bg2/40 border border-line rounded-xl flex items-center justify-between">
                                 <span className="text-xs font-medium text-muted">Your Rating:</span>
                                 <div className="flex items-center gap-1">
                                     {[1, 2, 3, 4, 5].map((star) => (
