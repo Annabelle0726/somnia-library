@@ -153,37 +153,37 @@ export const BookFormFields: React.FC<BookFormFieldsProps> = ({
                 </div>
             </div>
 
-            {/* 评分 & 辣度 */}
-            <div className="grid grid-cols-2 gap-4 sm:gap-5 p-4 bg-card/40 border border-line/40 rounded-2xl">
-                <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-amber-400 flex items-center gap-1 font-[family-name:var(--font-mono)]">
-                        <span>★</span> Rating (0 - 5)
-                    </label>
-                    <input
-                        type="number"
-                        step="0.5"
-                        max="5"
-                        min="0"
-                        value={form.rating}
-                        onChange={(e) => updateField('rating', e.target.value)}
-                        className="w-full px-3.5 py-2 bg-bg2 border border-line rounded-xl text-sm font-bold text-ink focus:outline-none focus:border-amber-400/50"
-                    />
-                </div>
+            {/*/!* 评分 & 辣度 *!/*/}
+            {/*<div className="grid grid-cols-2 gap-4 sm:gap-5 p-4 bg-card/40 border border-line/40 rounded-2xl">*/}
+            {/*    <div className="space-y-1.5">*/}
+            {/*        <label className="text-xs font-bold text-amber-400 flex items-center gap-1 font-[family-name:var(--font-mono)]">*/}
+            {/*            <span>★</span> Rating (0 - 5)*/}
+            {/*        </label>*/}
+            {/*        <input*/}
+            {/*            type="number"*/}
+            {/*            step="0.5"*/}
+            {/*            max="5"*/}
+            {/*            min="0"*/}
+            {/*            value={form.rating}*/}
+            {/*            onChange={(e) => updateField('rating', e.target.value)}*/}
+            {/*            className="w-full px-3.5 py-2 bg-bg2 border border-line rounded-xl text-sm font-bold text-ink focus:outline-none focus:border-amber-400/50"*/}
+            {/*        />*/}
+            {/*    </div>*/}
 
-                <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-rose-400 flex items-center gap-1 font-[family-name:var(--font-mono)]">
-                        <span>🌶️</span> Spice Level (0 - 5)
-                    </label>
-                    <input
-                        type="number"
-                        max="5"
-                        min="0"
-                        value={form.spice}
-                        onChange={(e) => updateField('spice', e.target.value)}
-                        className="w-full px-3.5 py-2 bg-bg2 border border-line rounded-xl text-sm font-bold text-ink focus:outline-none focus:border-rose-400/50"
-                    />
-                </div>
-            </div>
+            {/*    <div className="space-y-1.5">*/}
+            {/*        <label className="text-xs font-bold text-rose-400 flex items-center gap-1 font-[family-name:var(--font-mono)]">*/}
+            {/*            <span>🌶️</span> Spice Level (0 - 5)*/}
+            {/*        </label>*/}
+            {/*        <input*/}
+            {/*            type="number"*/}
+            {/*            max="5"*/}
+            {/*            min="0"*/}
+            {/*            value={form.spice}*/}
+            {/*            onChange={(e) => updateField('spice', e.target.value)}*/}
+            {/*            className="w-full px-3.5 py-2 bg-bg2 border border-line rounded-xl text-sm font-bold text-ink focus:outline-none focus:border-rose-400/50"*/}
+            {/*        />*/}
+            {/*    </div>*/}
+            {/*</div>*/}
 
             {/* Tropes 标签 */}
             <div className="space-y-1.5">
@@ -195,13 +195,13 @@ export const BookFormFields: React.FC<BookFormFieldsProps> = ({
             Required if rating &gt; 0
         </span>
                 </div>
-                <input
-                    type="text"
-                    value={form.tropesInput}
-                    onChange={(e) => updateField('tropesInput', e.target.value)}
-                    placeholder="What did you think? Enemies to Lovers, Slow Burn, Great worldbuilding..."
-                    className="w-full px-3.5 py-2.5 bg-bg2/90 border border-line rounded-xl text-xs text-ink placeholder:text-muted/50 focus:outline-none focus:border-tertiary font-[family-name:var(--font-mono)] shadow-inner"
-                />
+                {/*<input*/}
+                {/*    type="text"*/}
+                {/*    value={form.tropesInput}*/}
+                {/*    onChange={(e) => updateField('tropesInput', e.target.value)}*/}
+                {/*    placeholder="What did you think? Enemies to Lovers, Slow Burn, Great worldbuilding..."*/}
+                {/*    className="w-full px-3.5 py-2.5 bg-bg2/90 border border-line rounded-xl text-xs text-ink placeholder:text-muted/50 focus:outline-none focus:border-tertiary font-[family-name:var(--font-mono)] shadow-inner"*/}
+                {/*/>*/}
             </div>
 
             {/* 个人归档设定区 */}
