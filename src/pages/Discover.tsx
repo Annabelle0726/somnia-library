@@ -1,5 +1,5 @@
 
-export default function Discover () {
+export function Discover () {
     return (
         <div>
             <h2>Discover Page</h2>

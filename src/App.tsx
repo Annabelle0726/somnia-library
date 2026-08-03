@@ -8,11 +8,11 @@ import {Layout} from './components/layout/Layout';
 import Home from './pages/Home';
 import {Library} from './pages/Library';
 import {Shelves} from './pages/Shelves';
-import Match from './pages/Match';
-import Discover from './pages/Discover';
+import {Match} from './pages/Match';
+import {Discover} from './pages/Discover';
 import Theme from "./pages/Theme";
 import {Planner} from "./pages/Planner.tsx";
-import Stats from "./pages/Stats.tsx";
+import {Stats} from "./pages/Stats.tsx";
 import {AddBook} from "./pages/AddBook.tsx";
 import {Settings} from "./pages/Settings.tsx";
 import {ProtectedRoute} from './components/layout/ProtectedRoute.tsx';
@@ -22,7 +22,7 @@ import Clubs from "./pages/Clubs.tsx";
 import Landing from './auth/Landing';
 import AuthScreen from './auth/AuthScreen';
 import UnauthShell from './auth/UnauthShell';
-import { Toaster } from 'react-hot-toast';
+import {Toaster} from 'react-hot-toast';
 
 const basename = import.meta.env.MODE === 'production' ? '/somnia-library' : '';
 
@@ -31,7 +31,7 @@ export default function App() {
         <ThemeProvider>
             <AuthProvider>
                 {/* ⚡ 1. 将 Toast 放在全局顶层，与 Router 平级 */}
-                <Toaster position="top-center" reverseOrder={false} />
+                <Toaster position="top-center" reverseOrder={false}/>
 
                 <HashRouter basename={basename}>
                     <Routes>
