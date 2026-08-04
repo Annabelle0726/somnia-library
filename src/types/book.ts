@@ -1,9 +1,10 @@
 // src/types/book.ts
 
 /**
- * 1. 公共图书实体类型（对应 Supabase public.books 表）
+ * 1. 公共图书基础实体类型（严格对应 Supabase public.books 表中的实际列）
+ * ⚠️ 已清理废弃的 tropes_0 ~ 4
  */
-export interface Book {
+export interface BookRow {
     id: string;
     isbn: string;
     title: string;
@@ -15,14 +16,14 @@ export interface Book {
     rating: number | null;
     cover: string | null;
     created_at?: string;
-
     spice_reasoning: string | null;
-    tropes_0?: string | null;
-    tropes_1?: string | null;
-    tropes_2?: string | null;
-    tropes_3?: string | null;
-    tropes_4?: string | null;
+}
 
+/**
+ * 1.5 扩展的公共图书类型 (Hydrated Object)
+ * 包含了通过多对多联表查询 (JOIN) 提取并展平后的纯文本标签数组
+ */
+export interface Book extends BookRow {
     tropes?: string[];
 }
 

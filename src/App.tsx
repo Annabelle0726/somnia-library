@@ -17,6 +17,7 @@ import {AddBook} from "./pages/AddBook.tsx";
 import {Settings} from "./pages/Settings.tsx";
 import {ProtectedRoute} from './components/layout/ProtectedRoute.tsx';
 import {Clubs} from "./pages/Clubs.tsx";
+import {Tropes} from "./pages/Tropes.tsx";
 // 外部页面
 import Landing from './auth/Landing';
 import AuthScreen from './auth/AuthScreen';
@@ -57,6 +58,7 @@ export default function App() {
                             <Route path="shelves" element={<Shelves/>}/>
                             <Route path="addBook" element={<AddBook/>}/>
                             <Route path="theme" element={<Theme/>}/>
+                            <Route path="tropes" element={<Tropes/>}/>
                         </Route>
                     </Routes>
                 </HashRouter>

@@ -1,4 +1,3 @@
-// src/components/library/BookCard.tsx
 import React, { useState, useEffect } from 'react';
 import type { BookWithUserData, UserFavorite } from '../../types/book';
 import { useAuth } from '../../auth/useAuth';
@@ -145,7 +144,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onEdit, onFavoriteTogg
                     {book.author || 'Unknown Author'}
                 </p>
 
-                {/* 系列信息或 Tropes 标签 */}
+                {/* ✨ 修复点：适配新类型，只从 book.tropes 数组中获取第一个标签作为展示 */}
                 <div className="pt-0.5 flex items-center gap-2 text-[11px] text-tertiary/90 font-[family-name:var(--font-mono)] truncate">
                     {book.series ? (
                         <span className="truncate">

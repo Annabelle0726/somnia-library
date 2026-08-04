@@ -12,10 +12,11 @@ export function Nav({ isCollapsed, onToggle }: NavProps) {
         { name: 'Library', icon: '📚' },
         { name: 'Shelves', icon: '📖' },
         { name: 'Planner', icon: '📅' },
+        { name: 'Tropes', icon: '🎭' },
         { name: 'Stats', icon: '📊' },
         { name: 'Match', icon: '🎯' },
         { name: 'Discover', icon: "🎈" },
-        { name: 'Clubs', icon: '🏛️' },
+        { name: 'Clubs', icon: '🏛️' }
     ];
 
     const functionButtons = [

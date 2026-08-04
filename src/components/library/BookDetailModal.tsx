@@ -1,4 +1,5 @@
 // src/components/library/BookDetailModal.tsx
+
 import React, { useState, useEffect } from 'react';
 import type { BookWithUserData, ReadingStatus, BookReview } from '../../types/book';
 import { useAuth } from '../../auth/useAuth';
@@ -300,7 +301,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                             <span>★</span> {book.rating ? Number(book.rating).toFixed(2) : 'N/A'}
                         </div>
 
-                        {/* 🌶️ 辣度显示 (支持 null 显示 Assessing 状态) */}
+                        {/* 🌶️ 辣度显示 */}
                         <div className="relative group flex items-center gap-1 px-3 py-1.5 bg-card/80 border border-line rounded-xl text-rose-400 font-bold cursor-help">
                             {book.spice === null || book.spice === undefined ? (
                                 <span className="text-[10px] animate-pulse text-amber-400 flex items-center gap-1">
@@ -312,8 +313,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                                     <span>🌶️</span> {book.spice} / 5
                                 </>
                             )}
-
-                            {/* Hover Tooltip */}
+                            {/* Hover Tooltip (保持不变) */}
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-bg border border-primary/30 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
                                 <div className="text-[10px] text-muted mb-1 leading-relaxed">
                                     <strong className="text-primary block mb-1">What is Spice Level?</strong>
@@ -394,9 +394,12 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                             onOpenReader={(url) => setActiveReaderUrl(url)}
                         />
 
+                        {/* 🎯 新增区域：展示这本书所属的 Tropes 列表 (使用新类型) */}
                         {book.tropes && book.tropes.length > 0 && (
                             <div className="space-y-2">
-                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">Featured Tropes</h4>
+                                <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">
+                                    Featured Tropes ({book.tropes.length})
+                                </h4>
                                 <div className="flex flex-wrap gap-2">
                                     {book.tropes.map((t, idx) => (
                                         <span key={idx}
