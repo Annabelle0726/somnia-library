@@ -226,7 +226,7 @@ export function Library() {
     const hasActiveFilters = searchQuery || sortBy !== 'default' || spiceFilter !== 'all' || ratingFilter !== 'all';
 
     return (
-        <div className="flex flex-col gap-6 w-full">
+        <div className="flex flex-col gap-3 w-full">
             {/* 顶部 Header & 搜索栏 */}
             <div className="flex flex-col gap-6 bg-card/60 border border-line/80 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -272,7 +272,7 @@ export function Library() {
                 </div>
 
                 {/* 🎛️ 筛选与排序控制条 (Filter & Sort Bar) */}
-                <div className="pt-4 border-t border-line/40 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+                <div className="border-line/40 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
                     <div className="flex items-center gap-3 flex-wrap">
                         {/* 🌶️ Spice Filter */}
                         <div className="flex items-center gap-1.5 bg-bg2/80 border border-line/60 rounded-xl px-3 py-1.5">
@@ -379,32 +379,54 @@ export function Library() {
                     {/* 翻页栏 */}
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-line/60 text-xs text-muted font-mono">
                         <div>
-                            Showing <span className="font-bold text-ink">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-ink">{Math.min(currentPage * itemsPerPage, processedBooks.length)}</span> of <span className="font-bold text-ink">{processedBooks.length}</span> titles
+                            Showing <span className="font-bold text-ink">{processedBooks.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-ink">{Math.min(currentPage * itemsPerPage, processedBooks.length)}</span> of <span className="font-bold text-ink">{processedBooks.length}</span> titles
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                            {/* 第一页 */}
+                            <button
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(1)}
+                                className="px-2.5 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all cursor-pointer"
+                                title="First Page"
+                            >
+                                « First
+                            </button>
+
+                            {/* 上一页 */}
                             <button
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage((p) => p - 1)}
-                                className="px-3.5 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all cursor-pointer"
+                                className="px-3 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all cursor-pointer"
                             >
                                 ← Prev
                             </button>
 
+                            {/* 页码指示 */}
                             <span className="px-3 py-1.5 bg-bg2/80 rounded-xl text-ink font-bold border border-line/40">
-                                {currentPage} / {totalPages}
-                            </span>
+            {currentPage} / {totalPages}
+        </span>
 
+                            {/* 下一页 */}
                             <button
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage((p) => p + 1)}
-                                className="px-3.5 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all cursor-pointer"
+                                className="px-3 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all cursor-pointer"
                             >
                                 Next →
                             </button>
+
+                            {/* 最后一页 */}
+                            <button
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(totalPages)}
+                                className="px-2.5 py-1.5 bg-card border border-line rounded-xl hover:border-tertiary hover:text-ink disabled:opacity-40 disabled:hover:border-line disabled:hover:text-muted transition-all cursor-pointer"
+                                title="Last Page"
+                            >
+                                Last »
+                            </button>
                         </div>
-                    </div>
-                </>
+                    </div>                </>
             )}
 
             {selectedBook && (
