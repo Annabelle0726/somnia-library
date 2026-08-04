@@ -18,7 +18,7 @@ export function Layout() {
             {/* 右侧内容区 */}
             <div className="relative z-10 w-full flex-1 flex flex-col h-screen overflow-y-auto">
                 {/* 💡 关键修改 2：删除了原本在 Layout 里的 <button>，由 Nav 内部统筹渲染折叠按钮 */}
-                <main className="flex-1 max-w-5xl mx-auto w-full py-12 px-6 sm:px-12">
+                <main className="flex-1 max-w-5xl mx-auto w-full py-6 px-6 sm:px-12 flex justify-between items-center items-center">
                     <Outlet />
                 </main>
                 <Footer />

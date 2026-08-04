@@ -16,8 +16,7 @@ import {Stats} from "./pages/Stats.tsx";
 import {AddBook} from "./pages/AddBook.tsx";
 import {Settings} from "./pages/Settings.tsx";
 import {ProtectedRoute} from './components/layout/ProtectedRoute.tsx';
-
-import Clubs from "./pages/Clubs.tsx";
+import {Clubs} from "./pages/Clubs.tsx";
 // 外部页面
 import Landing from './auth/Landing';
 import AuthScreen from './auth/AuthScreen';

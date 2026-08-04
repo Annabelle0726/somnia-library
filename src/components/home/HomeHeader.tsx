@@ -26,7 +26,8 @@ export function HomeHeader() {
                     <div className="flex flex-wrap items-center justify-between w-full gap-3 mt-0.5">
                         {/* 左侧：主标题 + 附带的诗意副标题 */}
                         <div className="flex flex-col items-start">
-                            <h1 className="relative z-10 text-xl sm:text-3xl md:text-4xl font-display font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-br from-white via-ink to-muted drop-shadow-md leading-none">
+                            <h1 className="relative z-10 text-xl sm:text-2xl md:text-3xl hero-title
+                            font-display font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-br from-white via-ink to-muted drop-shadow-md leading-none">
                                 Somnia Library
                                 <span className="text-primary inline-block animate-pulse ml-0.5 drop-shadow-md">.</span>
                             </h1>
