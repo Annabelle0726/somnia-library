@@ -5,15 +5,15 @@ import { supabase } from '../../lib/supabase';
 
 interface CurrentReadData {
     title: string;
-    progress: number;
+    count: number; // 替换了 progress，改为记录正在读的总本数
 }
 
 export function HeaderReadingStats() {
     const { user } = useAuth();
     const [streakDays, setStreakDays] = useState<number>(0);
-    const [currentBook, setCurrentBook] = useState<CurrentReadData>({
+    const [currentRead, setCurrentRead] = useState<CurrentReadData>({
         title: 'Dormant Pages',
-        progress: 0,
+        count: 0,
     });
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -25,32 +25,30 @@ export function HeaderReadingStats() {
             }
 
             try {
-                // 1. 查询当前在读的书籍：连表查询 public.books 获取 title
+                // 1. 查询当前在读的书籍：获取所有 status 为 reading 的记录，按更新时间倒序
                 const { data: statusData, error: statusError } = await supabase
                     .from('user_book_status')
-                    .select('progress, books(title)')
+                    .select('books(title)')
                     .eq('user_id', user.id)
-                    .eq('status', 'reading') // 对应建表时的 'reading' 小写约束
-                    .order('updated_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
+                    .eq('status', 'reading')
+                    .order('updated_at', { ascending: false });
 
                 if (statusError) {
                     console.error('Error fetching current read status:', statusError);
-                } else if (statusData) {
-                    // Supabase 返回的连表对象解构：books 是一个对象 (或者单项数组)
-                    const bookInfo = Array.isArray(statusData.books)
-                        ? statusData.books[0]
-                        : statusData.books;
+                } else if (statusData && statusData.length > 0) {
+                    // 获取最近更新的第一本书的信息
+                    const latestBookInfo = Array.isArray(statusData[0].books)
+                        ? statusData[0].books[0]
+                        : statusData[0].books;
 
-                    setCurrentBook({
-                        title: bookInfo?.title || 'Dormant Pages',
-                        progress: statusData.progress ?? 0,
+                    setCurrentRead({
+                        title: latestBookInfo?.title || 'Unknown Book',
+                        count: statusData.length, // 正在读的总数
                     });
                 } else {
-                    setCurrentBook({
+                    setCurrentRead({
                         title: 'Dormant Pages',
-                        progress: 0,
+                        count: 0,
                     });
                 }
 
@@ -94,7 +92,7 @@ export function HeaderReadingStats() {
     return (
         <div className="flex items-center gap-2 sm:gap-2.5">
             {/* 1. Reading Streak */}
-            <div className="flex items-center gap-1.5 px-2.5 sm:px-3 h-[38px] sm:h-[42px] bg-card/80 border border-line rounded-xl shadow-sm backdrop-blur-sm transition-transform duration-300 hover:scale-105 hover:border-tertiary/40">
+            <div className="flex items-center gap-1.5 px-2.5 sm:px-3 h-[38px] sm:h-[42px] bg-card/80 border border-line rounded-xl shadow-sm backdrop-blur-sm transition-transform duration-300 hover:border-tertiary/40">
                 {renderFlame()}
                 <div className="flex flex-col justify-center">
                     <span className="text-[8px] sm:text-[9px] font-bold text-tertiary leading-none tracking-wider uppercase font-[family-name:var(--font-mono)]">
@@ -107,38 +105,26 @@ export function HeaderReadingStats() {
             </div>
 
             {/* 2. Current Reading */}
-            <div className="flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 h-[38px] sm:h-[42px] bg-card/80 border border-line rounded-xl shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-tertiary/40 max-w-[150px] sm:max-w-[200px]">
-                {/* 状态指示灯 */}
-                <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${currentBook.progress > 0 ? 'bg-primary animate-pulse' : 'bg-muted/40'}`}></div>
+            <div className="flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 h-[38px] sm:h-[42px] bg-card/80 border border-line rounded-xl shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-tertiary/40 max-w-[160px] sm:max-w-[220px]">
+                {/* 状态指示灯 (如果 count > 0 则亮起并闪烁) */}
+                <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${currentRead.count > 0 ? 'bg-primary animate-pulse shadow-[0_0_5px_var(--primary)]' : 'bg-muted/40'}`}></div>
 
-                <div className="flex flex-col justify-center min-w-[65px] sm:min-w-[90px] max-w-[85px] sm:max-w-[120px]">
+                <div className="flex flex-col justify-center min-w-[70px] sm:min-w-[100px] max-w-[100px] sm:max-w-[150px]">
+                    {/* 小标题：如果是多本书，显示 Reading (X) */}
                     <span className="text-[8px] sm:text-[9px] font-semibold text-muted leading-none tracking-wider uppercase font-[family-name:var(--font-mono)] truncate">
-                        Reading
+                        {currentRead.count > 1 ? `Reading (${currentRead.count})` : 'Reading'}
                     </span>
+
+                    {/* 主标题：显示最近在读的书名 */}
                     <span
                         className={`text-[11px] sm:text-[12px] font-bold leading-tight truncate mt-0.5 font-[family-name:var(--font-body)] ${
-                            currentBook.progress === 0 ? 'text-muted/80 italic font-normal' : 'text-ink'
+                            currentRead.count === 0 ? 'text-muted/80 italic font-normal' : 'text-ink'
                         }`}
-                        title={currentBook.title}
+                        title={currentRead.title}
                     >
-                        {loading ? '...' : currentBook.title}
+                        {loading ? '...' : currentRead.title}
                     </span>
-
-                    {/* 仅在进度 > 0 时，渲染进度条 */}
-                    {currentBook.progress > 0 && (
-                        <div className="w-full bg-bg2 rounded-full h-1 mt-1 overflow-hidden border border-line/40">
-                            <div
-                                className="bg-gradient-to-r from-tertiary to-primary h-full rounded-full transition-all duration-500"
-                                style={{ width: `${loading ? 0 : currentBook.progress}%` }}
-                            ></div>
-                        </div>
-                    )}
                 </div>
-
-                {/* 进度百分比 */}
-                <span className="text-[10px] sm:text-[11px] font-bold text-primary font-[family-name:var(--font-mono)] ml-0.5 shrink-0">
-                    {loading ? '0%' : `${currentBook.progress}%`}
-                </span>
             </div>
         </div>
     );

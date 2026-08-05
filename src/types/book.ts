@@ -37,7 +37,7 @@ export interface UserBookStatus {
     user_id: string;
     book_id: string;
     status: ReadingStatus | null;
-    progress: number;
+    // progress: number;
     updated_at: string;
 }
 
@@ -74,6 +74,6 @@ export interface BookReview {
 export interface BookWithUserData extends Book {
     is_fave?: boolean;                           // 标记是否有对应的 UserFavorite 记录
     user_status?: UserBookStatus['status'];      // 关联引用 UserBookStatus.status
-    progress?: UserBookStatus['progress'];       // 关联引用 UserBookStatus.progress
+    // progress?: UserBookStatus['progress'];       // 关联引用 UserBookStatus.progress
     user_review?: BookReview;                    // ⚡ 新增：当前登录用户对该书的评论与评分
 }
