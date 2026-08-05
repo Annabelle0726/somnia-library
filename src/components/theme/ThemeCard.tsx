@@ -68,21 +68,29 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isActive, currentMo
                 </div>
 
                 <div className="mt-auto pt-6 flex items-center justify-between">
-                    <span className="text-sm opacity-60 italic font-serif-fancy">
+                    <span className="text-sm opacity-60 italic">
                         {isActive ? 'Currently applied' : 'Try this out'}
                     </span>
+
+                    {/* ================= ✨ 升级后的 3D 物理按压按钮 ✨ ================= */}
                     <button
                         onClick={() => onSelect(theme.id)}
                         disabled={isActive}
                         style={isActive ? {} : { backgroundColor: colors.primary, color: '#fff' }}
-                        className={`px-6 py-2.5 rounded-full font-medium transition-all duration-300 
+                        className={`
+                            relative px-5 py-2.5 rounded-full font-medium transition-all duration-150 ease-out active:duration-75 select-none shadow-sm
                             ${isActive
-                            ? 'border-2 border-current bg-transparent opacity-60 cursor-default'
-                            : 'shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:brightness-110 active:scale-95'
-                        }`}
+                            ? 'border-2 border-current bg-transparent opacity-60 cursor-default shadow-none translate-y-0'
+                            : `text-white shadow-[0_4px_0_0_rgba(0,0,0,0.25)] translate-y-[-2px] 
+                                   hover:-translate-y-[3px] hover:shadow-[0_5px_0_0_rgba(0,0,0,0.25)] 
+                                   active:translate-y-[0px] active:shadow-[0_1px_0_0_rgba(0,0,0,0.25)] active:scale-[0.96]
+                                   active:brightness-90`
+                        }
+                        `}
                     >
                         {isActive ? 'Active' : 'Apply Skin'}
                     </button>
+                    {/* ============================================================ */}
                 </div>
             </div>
         </div>
