@@ -9,8 +9,10 @@ interface TropeStat {
 interface TopTropesBarProps {
     tropes: TropeStat[];
 }
+
 export const TopTropesBar: React.FC<TopTropesBarProps> = ({ tropes }) => {
     const maxCount = tropes[0]?.count || 1;
+
     return (
         <div className="bg-card/40 border border-line/60 rounded-2xl p-5 flex flex-col h-full">
             <div className="flex items-center justify-between mb-4 shrink-0">
@@ -30,7 +32,7 @@ export const TopTropesBar: React.FC<TopTropesBarProps> = ({ tropes }) => {
                     tropes.slice(0, 5).map((trope, idx) => {
                         const percentage = Math.round((trope.count / maxCount) * 100);
                         return (
-                            <div key={trope.name} className="space-y-1">
+                            <div key={`${trope.name}-${idx}`} className="space-y-1">
                                 <div className="flex justify-between text-[11px] font-mono">
                                     <span className="text-ink font-medium">
                                         <span className="text-tertiary mr-1.5">#{idx + 1}</span>

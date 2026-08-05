@@ -18,6 +18,7 @@ export function Stats() {
     const fetchStatsData = useCallback(async () => {
         setLoading(true);
         try {
+            // 1. 获取所有图书
             const { data: allBooks, error: booksError } = await supabase
                 .from('books')
                 .select('*');
@@ -30,30 +31,50 @@ export function Stats() {
 
             const bookIds = allBooks.map((b) => b.id);
             let statusMap = new Map();
+            let bookTropesMap = new Map<string, string[]>();
 
             if (userId) {
-                const { data: statusData } = await supabase
-                    .from('user_book_status')
-                    .select('book_id, status, progress')
-                    .eq('user_id', userId)
-                    .in('book_id', bookIds);
+                // 2. 并行获取用户的阅读状态与新表中的 Tropes 数据
+                const [statusRes, tropesRes] = await Promise.all([
+                    supabase
+                        .from('user_book_status')
+                        .select('book_id, status, progress')
+                        .eq('user_id', userId)
+                        .in('book_id', bookIds),
+                    supabase
+                        .from('user_book_tropes')
+                        .select('book_id, tropes(name)')
+                        .eq('user_id', userId)
+                        .in('book_id', bookIds)
+                ]);
 
-                statusMap = new Map(statusData?.map((s) => [s.book_id, s]) || []);
+                if (statusRes.data) {
+                    statusMap = new Map(statusRes.data.map((s) => [s.book_id, s]));
+                }
+
+                // 聚合每一本书的 Trope 名称列表
+                if (tropesRes.data) {
+                    tropesRes.data.forEach((item: any) => {
+                        const bId = item.book_id;
+                        const tropeName = item.tropes?.name;
+                        if (tropeName) {
+                            const existing = bookTropesMap.get(bId) || [];
+                            bookTropesMap.set(bId, [...existing, tropeName]);
+                        }
+                    });
+                }
             }
 
+            // 3. 格式化组装 BookWithUserData
             const formattedBooks: BookWithUserData[] = allBooks.map((book) => {
                 const userStatusObj = statusMap.get(book.id);
+                const assignedTropes = bookTropesMap.get(book.id) || [];
+
                 return {
                     ...book,
                     user_status: userStatusObj?.status,
                     progress: userStatusObj?.progress || 0,
-                    tropes: [
-                        book.tropes_0,
-                        book.tropes_1,
-                        book.tropes_2,
-                        book.tropes_3,
-                        book.tropes_4,
-                    ].filter(Boolean) as string[],
+                    tropes: assignedTropes, // 使用从 user_book_tropes 表查出的新数据
                 };
             });
 
@@ -69,7 +90,7 @@ export function Stats() {
         fetchStatsData();
     }, [fetchStatsData]);
 
-    // 📊 数据衍生指标计算
+    // 📊 数据衍生指标计算 (保持不变，能自动读取最新的 b.tropes)
     const statsSummary = useMemo(() => {
         const total = books.length;
         const completed = books.filter(b => b.user_status === 'read').length;
