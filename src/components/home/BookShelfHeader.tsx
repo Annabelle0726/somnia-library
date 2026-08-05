@@ -27,8 +27,10 @@ export function BookShelfHeader({
             border border-line
             rounded-sm
             p-6
+            pb-8
             shadow-md
             flex flex-col sm:flex-row items-center justify-between gap-6"
+             style={{ overflow: 'visible' }} // 强制保障不被截断
         >
             {/* 四角装饰 */}
             <div className="absolute top-1.5 left-1.5 w-2 h-2 bg-tertiary/60 rotate-45 shadow-sm" />
@@ -61,7 +63,6 @@ export function BookShelfHeader({
 
                 {/* 4. Faves */}
                 <div className="group flex items-center gap-2 px-3 py-1.5 border border-line bg-card/60 backdrop-blur-sm text-xs font-display text-ink tracking-wide transition-all duration-300 hover:bg-bg2/80 hover:border-muted">
-                    {/* ⚡ 修复：将 text-primary 改为 text-muted 保持一致 */}
                     <span className="text-muted text-[10px] group-hover:scale-110 transition-transform">♥</span>
                     <span className="font-bold text-sm font-mono text-ink">{loading ? '-' : faveCount}</span>
                     <span className="text-muted">faves</span>

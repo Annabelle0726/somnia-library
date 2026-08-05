@@ -6,7 +6,7 @@ export default function Home() {
         <div className="flex flex-col gap-8 w-full">
             <HomeHeader />
 
-            <main className="my-auto">
+            <main className="my-auto -z-10">
                 <Bookshelf />
             </main>
         </div>
