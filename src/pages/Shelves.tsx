@@ -30,14 +30,14 @@ export function Shelves() {
                 if (booksErr) throw booksErr;
                 if (!allBooks) return;
 
-                let userStatuses: Record<string, { status: any; progress: number }> = {};
+                let userStatuses: Record<string, { status: any;  }> = {};
                 let userFaves = new Set<string>();
 
                 if (user) {
                     const [statusRes, favesRes] = await Promise.all([
                         supabase
                             .from('user_book_status')
-                            .select('book_id, status, progress')
+                            .select('book_id, status')
                             .eq('user_id', user.id),
                         supabase
                             .from('user_favorites')
@@ -50,7 +50,7 @@ export function Shelves() {
                             if (s.status) {
                                 userStatuses[s.book_id] = {
                                     status: s.status,
-                                    progress: s.progress || 0,
+                                    // progress: s.progress || 0,
                                 };
                             }
                         });
@@ -75,7 +75,7 @@ export function Shelves() {
                         ...rawBook,
                         is_fave: isFavorite,
                         user_status: statusInfo?.status,
-                        progress: statusInfo?.progress ?? 0,
+                        // progress: statusInfo?.progress ?? 0,
                     };
 
                     const status = bookWithUser.user_status;

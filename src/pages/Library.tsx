@@ -130,9 +130,7 @@ export function Library() {
                 return {
                     ...book,
                     user_status: userStatusObj?.status,
-                    progress: userStatusObj?.progress || 0,
                     is_fave: faveSet.has(book.id),
-                    // ✅ 核心改变：不再从 old 字段取，而是从 tropesMap 取字符串数组
                     tropes: tropesMap.get(book.id) || [],
                 };
             });

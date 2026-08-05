@@ -1,7 +1,7 @@
 // src/pages/Planner.tsx
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import type { BookWithUserData } from '../types/book';
+import type { BookWithUserData, ReadingStatus } from '../types/book';
 import { BookDetailModal } from '../components/library/BookDetailModal';
 
 // 导入拆分出的组件
@@ -43,19 +43,22 @@ export function Planner() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // 获取图书、状态、计划，新增获取 favorites
+            // 获取图书、状态、计划以及 favorites
             const [booksRes, statusRes, plansRes, favesRes] = await Promise.all([
                 supabase.from('books').select('*'),
-                supabase.from('user_book_status').select('book_id, status, progress').eq('user_id', user.id),
+                supabase.from('user_book_status').select('book_id, status').eq('user_id', user.id),
                 supabase.from('user_book_plans').select('*').eq('user_id', user.id),
-                supabase.from('user_favorites').select('book_id').eq('user_id', user.id) // 新增
+                supabase.from('user_favorites').select('book_id').eq('user_id', user.id)
             ]);
 
             if (booksRes.error) throw booksRes.error;
 
-            let userStatuses: Record<string, { status: any; progress: number }> = {};
+            // 构建用户图书状态映射表（去掉了 progress 关联）
+            let userStatuses: Record<string, ReadingStatus> = {};
             statusRes.data?.forEach(s => {
-                userStatuses[s.book_id] = { status: s.status, progress: s.progress || 0 };
+                if (s.book_id && s.status) {
+                    userStatuses[s.book_id] = s.status as ReadingStatus;
+                }
             });
 
             let userFaves = new Set<string>();
@@ -70,13 +73,12 @@ export function Planner() {
             const bookMap = new Map<string, BookWithUserData>();
 
             booksRes.data?.forEach((rawBook: any) => {
-                const s = userStatuses[rawBook.id];
+                const status = userStatuses[rawBook.id];
                 const isFave = userFaves.has(rawBook.id);
 
                 const bookWithUser: BookWithUserData = {
                     ...rawBook,
-                    user_status: s?.status,
-                    progress: s?.progress ?? 0,
+                    user_status: status,
                     is_fave: isFave
                 };
 
@@ -84,14 +86,15 @@ export function Planner() {
                 bookMap.set(bookWithUser.id, bookWithUser);
 
                 // 根据状态分类
-                if (s?.status === 'reading') reading.push(bookWithUser);
-                if (s?.status === 'want_to_read') wantTo.push(bookWithUser);
+                if (status === 'reading') reading.push(bookWithUser);
+                if (status === 'want_to_read') wantTo.push(bookWithUser);
                 if (isFave) faves.push(bookWithUser);
             });
+
             setAllBooks(fullList);
             setReadingBooks(reading);
-            setWantToReadBooks(wantTo); // 保存状态
-            setFaveBooks(faves); // 保存状态
+            setWantToReadBooks(wantTo);
+            setFaveBooks(faves);
 
             const groupedPlans: Record<string, PlanEvent[]> = {};
             plansRes.data?.forEach((plan: any) => {

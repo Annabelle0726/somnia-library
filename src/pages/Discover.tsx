@@ -49,7 +49,7 @@ export function Discover() {
             if (userId) {
                 const { data: statusData } = await supabase
                     .from('user_book_status')
-                    .select('book_id, status, progress')
+                    .select('book_id, status')
                     .eq('user_id', userId)
                     .in('book_id', bookIds);
 
@@ -68,7 +68,7 @@ export function Discover() {
                 return {
                     ...book,
                     user_status: userStatusObj?.status,
-                    progress: userStatusObj?.progress || 0,
+                    // progress: userStatusObj?.progress || 0,
                     is_fave: faveSet.has(book.id),
                     tropes: [
                         book.tropes_0,

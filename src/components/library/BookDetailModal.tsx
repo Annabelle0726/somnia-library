@@ -239,29 +239,57 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
         }
     };
 
+    // 💾 阅读状态同步到数据库
     const handleSaveStatus = async (newStatus: ReadingStatus | 'unread') => {
-        if (!user) return;
+        if (!user) {
+            toast.error('Please log in first!');
+            return;
+        }
+
+        // 防止重复点击 (防抖锁)
+        if (loading) return;
+
+        // 1. 先更新本地 UI 状态（让下拉框立刻显示选中内容）
+        const oldStatus = status;
         setStatus(newStatus);
         setLoading(true);
 
         try {
             if (newStatus === 'unread') {
-                await supabase.from('user_book_status').delete().eq('user_id', user.id).eq('book_id', book.id);
+                // 如果是 unread，从数据库删除这条状态记录
+                const { error } = await supabase
+                    .from('user_book_status')
+                    .delete()
+                    .eq('user_id', user.id)
+                    .eq('book_id', book.id);
+
+                if (error) throw error;
             } else {
-                await supabase.from('user_book_status').upsert({
-                    user_id: user.id,
-                    book_id: book.id,
-                    status: newStatus,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'user_id,book_id' });
+                // 写入或更新 user_book_status 表
+                const { error } = await supabase
+                    .from('user_book_status')
+                    .upsert({
+                        user_id: user.id,
+                        book_id: book.id,
+                        status: newStatus,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id,book_id' });
+
+                if (error) throw error;
             }
+
+            // 2. 通知父组件更新数据
             onUpdate?.({
                 ...book,
                 is_fave: isFave,
-                user_status: newStatus === 'unread' ? undefined : newStatus,
+                user_status: newStatus === 'unread' ? undefined : (newStatus as ReadingStatus),
             });
-        } catch (err) {
-            console.error('Failed to sync status:', err);
+
+        } catch (err: any) {
+            console.error('Failed to sync status:', err); // 🔴 这里的红色报错一定要看！
+            // 如果保存失败，自动将 UI 状态回滚为原来的旧状态
+            setStatus(oldStatus);
+            toast.error(`Save failed: ${err.message || 'Database permission error'}`);
         } finally {
             setLoading(false);
         }

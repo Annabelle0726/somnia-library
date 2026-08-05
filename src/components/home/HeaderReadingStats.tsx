@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 
 interface CurrentReadData {
     title: string;
-    count: number; // 替换了 progress，改为记录正在读的总本数
+    count: number;
 }
 
 export function HeaderReadingStats() {
@@ -25,10 +25,10 @@ export function HeaderReadingStats() {
             }
 
             try {
-                // 1. 查询当前在读的书籍：获取所有 status 为 reading 的记录，按更新时间倒序
+                // 1. 查询当前在读的书籍
                 const { data: statusData, error: statusError } = await supabase
                     .from('user_book_status')
-                    .select('books(title)')
+                    .select('books(title), updated_at') // 加上 updated_at 用来算 Streak
                     .eq('user_id', user.id)
                     .eq('status', 'reading')
                     .order('updated_at', { ascending: false });
@@ -43,27 +43,39 @@ export function HeaderReadingStats() {
 
                     setCurrentRead({
                         title: latestBookInfo?.title || 'Unknown Book',
-                        count: statusData.length, // 正在读的总数
+                        count: statusData.length,
                     });
+
+                    // 🔥 核心修复：基于 updated_at 在客户端动态计算 Streak (滑动窗口 7 天逻辑)
+                    // 只要你哪天点了一下已读/在读，就算这天打卡了。
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+                    let activeDays = 0;
+                    const uniqueDays = new Set<string>();
+
+                    statusData.forEach(item => {
+                        if (item.updated_at) {
+                            const date = new Date(item.updated_at);
+                            if (date >= sevenDaysAgo) {
+                                // 格式化到日期字符串 (YYYY-MM-DD)，只算自然日
+                                const dateStr = date.toISOString().split('T')[0];
+                                uniqueDays.add(dateStr);
+                            }
+                        }
+                    });
+
+                    activeDays = uniqueDays.size;
+                    setStreakDays(activeDays);
+
                 } else {
                     setCurrentRead({
                         title: 'Dormant Pages',
                         count: 0,
                     });
-                }
-
-                // 2. 查询 Reading Streak
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('streak_days')
-                    .eq('id', user.id)
-                    .maybeSingle();
-
-                if (profileData && typeof profileData.streak_days === 'number') {
-                    setStreakDays(profileData.streak_days);
-                } else {
                     setStreakDays(0);
                 }
+
             } catch (err) {
                 console.error('Failed to load reading stats:', err);
             } finally {
@@ -78,7 +90,7 @@ export function HeaderReadingStats() {
     const renderFlame = () => {
         if (streakDays === 0) {
             return <span className="text-xs sm:text-sm opacity-50 select-none">🔥</span>;
-        } else if (streakDays >= 30) {
+        } else if (streakDays >= 7) {
             return (
                 <span className="text-xs sm:text-sm animate-bounce tracking-tighter drop-shadow-[0_0_8px_var(--tertiary)] select-none">
                     🔥🔥🔥
@@ -106,16 +118,13 @@ export function HeaderReadingStats() {
 
             {/* 2. Current Reading */}
             <div className="flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 h-[38px] sm:h-[42px] bg-card/80 border border-line rounded-xl shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-tertiary/40 max-w-[160px] sm:max-w-[220px]">
-                {/* 状态指示灯 (如果 count > 0 则亮起并闪烁) */}
+                {/* 状态指示灯 */}
                 <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${currentRead.count > 0 ? 'bg-primary animate-pulse shadow-[0_0_5px_var(--primary)]' : 'bg-muted/40'}`}></div>
 
                 <div className="flex flex-col justify-center min-w-[70px] sm:min-w-[100px] max-w-[100px] sm:max-w-[150px]">
-                    {/* 小标题：如果是多本书，显示 Reading (X) */}
                     <span className="text-[8px] sm:text-[9px] font-semibold text-muted leading-none tracking-wider uppercase font-[family-name:var(--font-mono)] truncate">
                         {currentRead.count > 1 ? `Reading (${currentRead.count})` : 'Reading'}
                     </span>
-
-                    {/* 主标题：显示最近在读的书名 */}
                     <span
                         className={`text-[11px] sm:text-[12px] font-bold leading-tight truncate mt-0.5 font-[family-name:var(--font-body)] ${
                             currentRead.count === 0 ? 'text-muted/80 italic font-normal' : 'text-ink'

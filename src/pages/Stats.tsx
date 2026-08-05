@@ -38,7 +38,7 @@ export function Stats() {
                 const [statusRes, tropesRes] = await Promise.all([
                     supabase
                         .from('user_book_status')
-                        .select('book_id, status, progress')
+                        .select('book_id, status')
                         .eq('user_id', userId)
                         .in('book_id', bookIds),
                     supabase
@@ -73,7 +73,6 @@ export function Stats() {
                 return {
                     ...book,
                     user_status: userStatusObj?.status,
-                    progress: userStatusObj?.progress || 0,
                     tropes: assignedTropes, // 使用从 user_book_tropes 表查出的新数据
                 };
             });

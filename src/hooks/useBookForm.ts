@@ -331,7 +331,6 @@ export function useBookForm(initialTitle = '') {
                     user_id: user.id,
                     book_id: targetBookId,
                     status: statusToSave,
-                    progress: 0,
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id,book_id' });
 

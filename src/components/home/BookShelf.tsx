@@ -57,14 +57,14 @@ export function Bookshelf() {
                 if (booksErr) throw booksErr;
                 if (!allBooks) return;
 
-                let userStatuses: Record<string, { status: any; progress: number }> = {};
+                let userStatuses: Record<string, { status: any; }> = {};
                 let userFaves = new Set<string>();
 
                 if (user) {
                     const [statusRes, favesRes] = await Promise.all([
                         supabase
                             .from('user_book_status')
-                            .select('book_id, status, progress')
+                            .select('book_id, status')
                             .eq('user_id', user.id),
                         supabase
                             .from('user_favorites')
@@ -77,7 +77,7 @@ export function Bookshelf() {
                             if (s.status) {
                                 userStatuses[s.book_id] = {
                                     status: s.status,
-                                    progress: s.progress || 0,
+
                                 };
                             }
                         });
@@ -101,7 +101,7 @@ export function Bookshelf() {
     // 辅助归类逻辑：提取出来供初始化与更新时使用
     const categorizeBooks = (
         rawBooksList: any[],
-        userStatuses: Record<string, { status: any; progress: number }>,
+        userStatuses: Record<string, { status: any }>,
         userFaves: Set<string>
     ) => {
         const reading: BookWithUserData[] = [];
@@ -117,8 +117,7 @@ export function Bookshelf() {
             const bookWithUser: BookWithUserData = {
                 ...rawBook,
                 is_fave: isFavorite,
-                user_status: statusInfo?.status,
-                progress: statusInfo?.progress ?? 0,
+                user_status: statusInfo?.status
             };
 
             fullList.push(bookWithUser);
