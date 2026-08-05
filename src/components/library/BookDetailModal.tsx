@@ -20,7 +20,6 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
 
     // 状态管理
     const [status, setStatus] = useState<ReadingStatus | 'unread'>(book.user_status || 'unread');
-    const [progress, setProgress] = useState<number>(book.progress || 0);
     const [isFave, setIsFave] = useState<boolean>(!!book.is_fave);
     const [loading, setLoading] = useState<boolean>(false);
     const [favLoading, setFavLoading] = useState<boolean>(false);
@@ -37,7 +36,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
     const [olKey, setOlKey] = useState<string | null>(null);
     const [activeReaderUrl, setActiveReaderUrl] = useState<string | null>(null);
 
-    // ⚡ 根据 ISBN 动态计算 Amazon 购买/搜索链接
+    // 根据 ISBN 动态计算 Amazon 购买/搜索链接
     const amazonUrl = book.isbn
         ? `https://www.amazon.com/s?k=${encodeURIComponent(book.isbn.trim())}`
         : null;
@@ -55,7 +54,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
         };
     }, [onClose]);
 
-    // ⚡ 监听 Supabase Realtime：当后台 DeepSeek 计算完 Spice 写入数据库时，自动实时更新 modal
+    // 监听 Supabase Realtime：当后台 DeepSeek 计算完 Spice 写入数据库时，自动实时更新 modal
     useEffect(() => {
         if (!book.id) return;
 
@@ -204,7 +203,6 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                     rating: updatedBook?.rating ?? book.rating,
                     is_fave: isFave,
                     user_status: status === 'unread' ? undefined : status,
-                    progress,
                     user_review: reviewData as BookReview
                 });
             }
@@ -233,7 +231,6 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                 ...book,
                 is_fave: nextFaveState,
                 user_status: status === 'unread' ? undefined : status,
-                progress
             });
         } catch (err) {
             setIsFave(!nextFaveState);
@@ -242,10 +239,9 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
         }
     };
 
-    const handleSaveStatus = async (newStatus: ReadingStatus | 'unread', newProgress: number) => {
+    const handleSaveStatus = async (newStatus: ReadingStatus | 'unread') => {
         if (!user) return;
         setStatus(newStatus);
-        setProgress(newProgress);
         setLoading(true);
 
         try {
@@ -256,7 +252,6 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                     user_id: user.id,
                     book_id: book.id,
                     status: newStatus,
-                    progress: newProgress,
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id,book_id' });
             }
@@ -264,7 +259,6 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                 ...book,
                 is_fave: isFave,
                 user_status: newStatus === 'unread' ? undefined : newStatus,
-                progress: newProgress
             });
         } catch (err) {
             console.error('Failed to sync status:', err);
@@ -313,7 +307,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                                     <span>🌶️</span> {book.spice} / 5
                                 </>
                             )}
-                            {/* Hover Tooltip (保持不变) */}
+                            {/* Hover Tooltip */}
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-bg border border-primary/30 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
                                 <div className="text-[10px] text-muted mb-1 leading-relaxed">
                                     <strong className="text-primary block mb-1">What is Spice Level?</strong>
@@ -394,7 +388,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                             onOpenReader={(url) => setActiveReaderUrl(url)}
                         />
 
-                        {/* 🎯 新增区域：展示这本书所属的 Tropes 列表 (使用新类型) */}
+                        {/* 展示 Tropes 列表 */}
                         {book.tropes && book.tropes.length > 0 && (
                             <div className="space-y-2">
                                 <h4 className="text-xs font-bold text-muted uppercase tracking-wider font-mono">
@@ -411,41 +405,25 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({ book, onClose,
                             </div>
                         )}
 
-                        {/* 阅读进度 */}
+                        {/* 阅读进度 / 状态区块 (保留完整样式，仅只移除了 Progress 输入框) */}
                         <div className="p-4 rounded-2xl bg-bg2/60 border border-line space-y-4">
                             <div className="flex items-center justify-between">
                                 <label className="text-xs font-bold text-ink uppercase tracking-wider font-mono">Your Reading Journey</label>
                                 {loading && <span className="text-[10px] text-tertiary animate-pulse font-mono">Syncing...</span>}
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <span className="text-[11px] text-muted block mb-1">Status</span>
-                                    <select
-                                        value={status}
-                                        onChange={(e) => handleSaveStatus(e.target.value as any, progress)}
-                                        className="w-full px-3 py-2 bg-card border border-line rounded-xl text-xs font-bold text-ink focus:outline-none cursor-pointer"
-                                    >
-                                        <option value="unread">Not Started</option>
-                                        <option value="want_to_read">Want to Read (TBR)</option>
-                                        <option value="reading">Currently Reading</option>
-                                        <option value="read">Finished</option>
-                                        <option value="abandoned">DNF (Abandoned)</option>
-                                    </select>
-                                </div>
-
-                                {status === 'reading' && (
-                                    <div>
-                                        <span className="text-[11px] text-muted block mb-1">Progress (%)</span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            value={progress}
-                                            onChange={(e) => handleSaveStatus(status, Number(e.target.value))}
-                                            className="w-full px-3 py-2 bg-card border border-line rounded-xl text-xs font-bold text-ink font-mono"
-                                        />
-                                    </div>
-                                )}
+                            <div>
+                                <span className="text-[11px] text-muted block mb-1">Status</span>
+                                <select
+                                    value={status}
+                                    onChange={(e) => handleSaveStatus(e.target.value as ReadingStatus | 'unread')}
+                                    className="w-full px-3 py-2 bg-card border border-line rounded-xl text-xs font-bold text-ink focus:outline-none cursor-pointer"
+                                >
+                                    <option value="unread">Not Started</option>
+                                    <option value="want_to_read">Want to Read (TBR)</option>
+                                    <option value="reading">Currently Reading</option>
+                                    <option value="read">Finished</option>
+                                    <option value="abandoned">DNF (Abandoned)</option>
+                                </select>
                             </div>
                         </div>
 
