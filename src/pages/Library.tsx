@@ -79,50 +79,40 @@ export function Library() {
                 return;
             }
 
-            const bookIds = allBooks.map((b) => b.id);
-
             let statusMap = new Map();
             let faveSet = new Set();
-            let tropesMap = new Map<string, string[]>(); // 新增：用于存标签的Map
+            let tropesMap = new Map<string, string[]>();
 
             if (userId) {
-                // 获取状态和收藏
-                const [{ data: statusData }, { data: faveData }] = await Promise.all([
+                // 核心重构：取消 .in('book_id', bookIds)，直接 eq(user_id) 一次性拉取全部
+                const [{ data: statusData }, { data: faveData }, { data: tropesData }] = await Promise.all([
                     supabase
                         .from('user_book_status')
-                        .select('book_id, status, progress')
-                        .eq('user_id', userId)
-                        .in('book_id', bookIds),
+                        .select('book_id, status')
+                        .eq('user_id', userId),
                     supabase
                         .from('user_favorites')
                         .select('book_id')
+                        .eq('user_id', userId),
+                    supabase
+                        .from('user_book_tropes')
+                        .select('book_id, tropes!inner(name)')
                         .eq('user_id', userId)
-                        .in('book_id', bookIds)
                 ]);
 
                 statusMap = new Map(statusData?.map((s) => [s.book_id, s]) || []);
                 faveSet = new Set(faveData?.map((f) => f.book_id) || []);
 
-                // ================= 核心修复：获取并拼接 Tropes =================
-                // 从中间表查出书ID 和 对应的标签名
-                const { data: tropesData } = await supabase
-                    .from('user_book_tropes')
-                    .select('book_id, tropes!inner(name)')
-                    .eq('user_id', userId)
-                    .in('book_id', bookIds);
-
-                // 将数据整理成 Map: { bookId: ['TropeA', 'TropeB'] }
+                // 将标签整理成 Map: { bookId: ['TropeA', 'TropeB'] }
                 if (tropesData) {
                     tropesData.forEach(item => {
                         const existing = tropesMap.get(item.book_id) || [];
-                        // 注意：tropes!inner 联表会返回一个对象 { name: 'xxx' }
                         const tropeName = (item.tropes as any)?.name;
                         if (tropeName) {
                             tropesMap.set(item.book_id, [...existing, tropeName]);
                         }
                     });
                 }
-                // ============================================================
             }
 
             const formattedBooks: BookWithUserData[] = allBooks.map((book) => {
