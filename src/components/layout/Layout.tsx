@@ -5,7 +5,6 @@ import { Footer } from './Footer';
 import { Nav } from './Nav';
 import { useState } from 'react';
 
-// 🔥 改为 export default function
 export default function Layout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);

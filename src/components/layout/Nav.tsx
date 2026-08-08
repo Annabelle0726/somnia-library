@@ -78,7 +78,7 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
                     }>
                         {({ isActive }) => (
                             <>
-                                <span className="text-[20px] leading-none" aria-hidden="true" style={{color: isActive ? 'var(--primary)' : 'var(--muted)'}}>⌂</span>
+                                <span className="text-[20px] leading-none" aria-hidden="true" style={{color: isActive ? 'var(--primary)' : 'var(--muted)'}}>🏡</span>
                                 <span className="skin-label">Home</span>
                             </>
                         )}
@@ -90,7 +90,7 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
                     }>
                         {({ isActive }) => (
                             <>
-                                <span className="text-[20px] leading-none" aria-hidden="true" style={{color: isActive ? 'var(--primary)' : 'var(--muted)'}}>▦</span>
+                                <span className="text-[20px] leading-none" aria-hidden="true" style={{color: isActive ? 'var(--primary)' : 'var(--muted)'}}>📚</span>
                                 <span className="skin-label">Library</span>
                             </>
                         )}
@@ -110,14 +110,14 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
                         </NavLink>
                     </div>
 
-                    {/* 4. Tropes */}
-                    <NavLink to="/tropes" className={({ isActive }) =>
+                    {/* 4. Discover */}
+                    <NavLink to="/discove" className={({ isActive }) =>
                         `flex flex-col items-center justify-center gap-1 pb-1.5 pt-2 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${isActive ? 'text-primary' : 'text-muted'}`
                     }>
                         {({ isActive }) => (
                             <>
-                                <span className="text-[20px] leading-none" aria-hidden="true" style={{color: isActive ? 'var(--primary)' : 'var(--muted)'}}>❦</span>
-                                <span className="skin-label">Tropes</span>
+                                <span className="text-[20px] leading-none" aria-hidden="true" style={{color: isActive ? 'var(--primary)' : 'var(--muted)'}}>🎈</span>
+                                <span className="skin-label">Discover</span>
                             </>
                         )}
                     </NavLink>
