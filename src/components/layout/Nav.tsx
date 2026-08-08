@@ -11,11 +11,11 @@ interface NavProps {
 
 export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose, onMobileOpen }: NavProps) {
     const navItems = [
-        { name: 'Home', path: '/', icon: '⌂' },
-        { name: 'Library', path: '/library', icon: '▦' },
+        { name: 'Home', path: '/', icon: '🏡' },
+        { name: 'Library', path: '/library', icon: '📚' },
         { name: 'Shelves', path: '/shelves', icon: '📖' },
         { name: 'Planner', path: '/planner', icon: '📅' },
-        { name: 'Tropes', path: '/tropes', icon: '❦' },
+        { name: 'Tropes', path: '/tropes', icon: '🧬' },
         { name: 'Stats', path: '/stats', icon: '📊' },
         { name: 'Match', path: '/match', icon: '🎯' },
         { name: 'Discover', path: '/discover', icon: "🎈" },
