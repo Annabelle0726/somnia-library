@@ -1,5 +1,5 @@
 import './App.css'
-import {HashRouter, Routes, Route} from "react-router-dom";
+import {HashRouter, Routes, Route, Navigate} from "react-router-dom"; // ✨ 引入 Navigate 做兜底
 import {ThemeProvider} from './hooks/ThemeContext.tsx';
 import {AuthProvider} from './auth/AuthProvider';
 
@@ -24,7 +24,6 @@ import AuthScreen from './auth/AuthScreen';
 import UnauthShell from './auth/UnauthShell';
 import {Toaster} from 'react-hot-toast';
 
-const basename = import.meta.env.MODE === 'production' ? '/somnia-library' : '';
 
 export default function App() {
     return (
@@ -33,7 +32,7 @@ export default function App() {
                 {/* ⚡ 1. 将 Toast 放在全局顶层，与 Router 平级 */}
                 <Toaster position="top-center" reverseOrder={false}/>
 
-                <HashRouter basename={basename}>
+                <HashRouter>
                     <Routes>
                         {/* 🌟 1. 公共路由：不需要侧边栏 */}
                         <Route element={<UnauthShell/>}>
@@ -60,6 +59,9 @@ export default function App() {
                             <Route path="theme" element={<Theme/>}/>
                             <Route path="tropes" element={<Tropes/>}/>
                         </Route>
+
+                        {/* 🌟 3. 兜底策略：如果访问了未定义的路径，自动跳转到 /welcome */}
+                        <Route path="*" element={<Navigate to="/welcome" replace />} />
                     </Routes>
                 </HashRouter>
             </AuthProvider>
