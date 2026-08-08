@@ -1,3 +1,4 @@
+// src/components/auth/GoogleAuthButton.tsx
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -6,14 +7,18 @@ export function EmailAuthForm() {
     const [searchParams, setSearchParams] = useSearchParams();
     const mode = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
 
-    // 新增：控制两步走注册的步骤编号 (1 或 2)
+    // 控制两步走注册的步骤编号 (1 或 2)
     const [step, setStep] = useState<number>(1);
 
+    // 1. Email, Password, Display Name (必填)
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
+
+    // 2. Sex, Phone (选填)
     const [sex, setSex] = useState('unspecified');
     const [phone, setPhone] = useState('');
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string>('');
 
@@ -23,7 +28,7 @@ export function EmailAuthForm() {
         setErrorMsg('');
     }, [mode]);
 
-    // 第一步点击“下一步”时的简单校验
+    // 第一步点击“下一步”时的校验（邮箱 + 密码）
     const handleNextStep = () => {
         setErrorMsg('');
         if (!email.trim() || !password.trim()) {
@@ -55,6 +60,12 @@ export function EmailAuthForm() {
                 // ==========================================
                 // 注册终极提交
                 // ==========================================
+
+                // 校验必填项：Display Name 不能为空
+                if (!displayName.trim()) {
+                    throw new Error('Display Name is required.');
+                }
+
                 // 1. 预校验：检查邮箱是否存在
                 const { data: existingUser, error: checkError } = await supabase
                     .from('profiles')
@@ -69,11 +80,15 @@ export function EmailAuthForm() {
                     throw new Error('This email is already registered. Please switch to Log In.');
                 }
 
-                // 2. 将个人基本信息全部塞进 metadata 传给后端触发器
+                // 动态构建当前环境的重定向 URL（自动兼容 localhost 和 GitHub Pages）
+                const redirectUrl = `${window.location.origin}${window.location.pathname}`;
+
+                // 2. 提交注册信息给 Supabase
                 const { error: authError } = await supabase.auth.signUp({
                     email: email.trim().toLowerCase(),
                     password,
                     options: {
+                        emailRedirectTo: redirectUrl,
                         data: {
                             display_name: displayName.trim(),
                             sex: sex,
@@ -110,7 +125,6 @@ export function EmailAuthForm() {
             }
 
             setErrorMsg(msg);
-            // 如果在第二步提交出错，可以让用户继续留在第二步修改，无需跳回第一步
         } finally {
             setIsSubmitting(false);
         }
@@ -125,13 +139,13 @@ export function EmailAuthForm() {
             )}
 
             {/* ========================================== */}
-            {/*场景 A：登录模式 OR 注册的第一步 (填写邮箱+密码)*/}
+            {/* 场景 A：登录模式 OR 注册第一步 (邮箱+密码，均为必填) */}
             {/* ========================================== */}
             {(mode === 'login' || (mode === 'signup' && step === 1)) && (
                 <>
                     <div>
                         <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
-                            Email
+                            Email <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="email"
@@ -145,7 +159,7 @@ export function EmailAuthForm() {
 
                     <div>
                         <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
-                            Password
+                            Password <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="password"
@@ -160,21 +174,21 @@ export function EmailAuthForm() {
             )}
 
             {/* ========================================== */}
-            {/*场景 B：注册的第二步 (填写个人资料)*/}
+            {/* 场景 B：注册第二步 (Display Name 必填，Sex/Phone 选填) */}
             {/* ========================================== */}
             {mode === 'signup' && step === 2 && (
                 <>
-                    <div className="text-xs font-[family-name:var(--font-mono)]
-                    text-[var(--tertiary)] mb-1">
+                    <div className="text-xs font-[family-name:var(--font-mono)] text-[var(--tertiary)] mb-1">
                         Step 2 of 2: Almost there! Tell us a bit about yourself.
                     </div>
 
                     <div>
                         <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
-                            Display Name
+                            Display Name <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
+                            required
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
                             className="w-full p-2.5 bg-transparent border border-[var(--line)] rounded focus:outline-none focus:border-[var(--primary)] transition-colors font-[family-name:var(--font-mono)] text-sm text-[var(--ink)]"
@@ -185,7 +199,7 @@ export function EmailAuthForm() {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
-                                Sex
+                                Sex <span className="text-xs text-[var(--ink)]/40 lowercase">(optional)</span>
                             </label>
                             <select
                                 value={sex}
@@ -200,7 +214,7 @@ export function EmailAuthForm() {
                         </div>
                         <div>
                             <label className="block mb-1 text-[var(--ink)]/80 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wider">
-                                Phone
+                                Phone <span className="text-xs text-[var(--ink)]/40 lowercase">(optional)</span>
                             </label>
                             <input
                                 type="tel"
@@ -215,10 +229,9 @@ export function EmailAuthForm() {
             )}
 
             {/* ========================================== */}
-            {/*按钮逻辑区域 (根据步骤渲染不同的按钮)*/}
+            {/* 按钮区域 */}
             {/* ========================================== */}
             {mode === 'signup' && step === 1 ? (
-                // 注册第一步：显示 "下一步" 按钮（不需要触发 form submit）
                 <button
                     type="button"
                     onClick={handleNextStep}
@@ -228,7 +241,6 @@ export function EmailAuthForm() {
                     <span>➔</span>
                 </button>
             ) : mode === 'signup' && step === 2 ? (
-                // 注册第二步：显示 "上一步" 和 "终极提交" 两个按钮
                 <div className="mt-2 flex gap-3">
                     <button
                         type="button"
@@ -247,7 +259,6 @@ export function EmailAuthForm() {
                     </button>
                 </div>
             ) : (
-                // 默认登录模式：仅显示常规的 Enter Library 按钮
                 <button
                     type="submit"
                     disabled={isSubmitting}
