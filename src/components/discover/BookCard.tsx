@@ -8,7 +8,7 @@ interface BookCardProps {
 
 export const BookCard: React.FC<BookCardProps> = ({ book }) => {
     // 提取前 3 个 tropes 展示
-    const displayTropes = [book.tropes_0, book.tropes_1, book.tropes_2].filter(Boolean).slice(0, 2);
+    const displayTropes = book.tropes && book.tropes.length > 0 ? book.tropes.slice(0, 3) : [].filter(Boolean).slice(0, 2);
 
     return (
         <div className="group relative flex flex-col bg-card border border-line/60 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-tertiary/40">

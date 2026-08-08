@@ -40,9 +40,6 @@ export function PlannerSidebar({ readingBooks, wantToReadBooks, faveBooks, onBoo
                                     <span className="font-bold text-xs text-ink line-clamp-1 group-hover:text-primary transition-colors">
                                         {book.title}
                                     </span>
-                                    <span className="text-[10px] text-muted font-mono">
-                                        Progress: {book.progress || 0}%
-                                    </span>
                                 </div>
                             </div>
                         ))}

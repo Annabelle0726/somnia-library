@@ -1,3 +1,4 @@
+// src/components/library/BookCard.tsx
 import React, { useState, useEffect } from 'react';
 import type { BookWithUserData, UserFavorite } from '../../types/book';
 import { useAuth } from '../../auth/useAuth';
