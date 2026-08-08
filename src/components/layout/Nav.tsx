@@ -52,7 +52,6 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
     ];
 
     const handleNavClick = () => {
-        // 移动端点击任意菜单后，自动关闭抽屉
         if (onMobileClose) {
             onMobileClose();
         }
@@ -60,7 +59,7 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
 
     return (
         <>
-            {/* 📱 移动端抽屉遮罩 (Overlay) - 点击关闭 */}
+            {/* 📱 移动端抽屉遮罩 (Overlay) */}
             {isMobileOpen && (
                 <div
                     onClick={onMobileClose}
@@ -68,22 +67,21 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
                 />
             )}
 
-            {/* 侧边栏容器：移动端采用 Fixed 抽屉，桌面端保持 Sticky 侧边栏 */}
+            {/* 侧边栏容器 */}
             <aside
                 className={`fixed md:sticky top-0 h-screen shrink-0 z-50 transition-transform duration-300 ${
                     isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 }`}
             >
                 <nav
-                    className={`h-full bg-bg/95 md:bg-bg/80 backdrop-blur-md flex flex-col items-center justify-between py-6 transition-all duration-500 ease-in-out ${
-                        // 在移动端无条件展开为 256px，桌面端才根据 isCollapsed 决定宽度
+                    className={`h-full bg-bg/95 md:bg-bg/80 backdrop-blur-md flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${
                         isCollapsed
                             ? 'w-64 md:w-0 md:px-0 md:opacity-0 md:overflow-hidden md:border-none'
                             : 'w-64 px-6 border-r border-line shadow-2xl md:shadow-none'
                     }`}
                 >
                     {/* 移动端抽屉顶部关闭按钮 */}
-                    <div className="w-full flex items-center justify-between md:hidden mb-2 pb-3 border-b border-line/40">
+                    <div className="w-full flex items-center justify-between md:hidden mb-4 pb-2 border-b border-line/40">
                         <span className="font-display font-bold italic text-ink text-base">Menu</span>
                         <button
                             onClick={onMobileClose}
@@ -93,8 +91,8 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
                         </button>
                     </div>
 
-                    {/* 上半部分：导航链接 */}
-                    <div className="flex flex-col gap-2 w-full overflow-y-auto max-h-[55vh] no-scrollbar items-center">
+                    {/* 💡 关键修改：允许纵向滚动 (overflow-y-auto)，但隐藏粗丑滚动条 [scrollbar-width:none] */}
+                    <div className="flex flex-col gap-2.5 w-full max-h-[300px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden items-center py-1">
                         {navItems.map((item) => (
                             <NavLink
                                 key={item.name}
@@ -151,9 +149,9 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
                         ))}
                     </div>
 
-                    {/* 下半部分：功能区 */}
-                    <div className="flex flex-col w-full transition-all duration-500 mt-2 items-center gap-2">
-                        <div className="relative w-full h-[1px] min-h-[1px] bg-gradient-to-r from-transparent via-amber-400/30 to-transparent shrink-0 mb-2">
+                    {/* 下半部分功能按钮 */}
+                    <div className="flex flex-col w-full transition-all duration-500 mt-3 items-center gap-3">
+                        <div className="relative w-full h-[1px] min-h-[1px] bg-gradient-to-r from-transparent via-amber-400/30 to-transparent shrink-0 mb-1">
                             <div className="absolute left-1/2 -top-[3px] -translate-x-1/2 w-1.5 h-1.5 rotate-45 bg-bg border border-amber-400/50 shadow-[0_0_5px_rgba(232,163,61,0.4)]"></div>
                         </div>
 
@@ -168,7 +166,7 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
                                     <div
                                         className={`flex items-center border rounded-xl transition-all duration-300
                         text-xs font-[family-name:var(--font-serif-fancy)] tracking-wider whitespace-nowrap overflow-hidden
-                        justify-center w-full max-w-[180px] px-3 py-2
+                        justify-center w-full max-w-[180px] px-3 py-1.5
                         ${
                                             isActive
                                                 ? `${btn.activeBorder} ${btn.activeText} bg-card shadow-[inset_0_1px_rgba(255,255,255,0.1)]`
@@ -193,7 +191,7 @@ export function Nav({ isCollapsed, onToggle, isMobileOpen = false, onMobileClose
                     </div>
                 </nav>
 
-                {/* 桌面端折叠切换按钮（仅在桌面端显示） */}
+                {/* 桌面端折叠切换按钮 */}
                 <button
                     onClick={onToggle}
                     title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
