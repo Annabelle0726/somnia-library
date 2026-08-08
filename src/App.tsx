@@ -4,7 +4,7 @@ import {ThemeProvider} from './hooks/ThemeContext.tsx';
 import {AuthProvider} from './auth/AuthProvider';
 
 // 内部页面
-import {Layout} from './components/layout/Layout';
+import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import {Library} from './pages/Library';
 import {Shelves} from './pages/Shelves';

@@ -5,20 +5,25 @@ import { Footer } from './Footer';
 import { Nav } from './Nav';
 import { useState } from 'react';
 
-export function Layout() {
+// 🔥 改为 export default function
+export default function Layout() {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     return (
         <div className="relative bg-bg min-h-screen flex flex-row font-body text-ink">
             <Background />
 
-            {/* 💡 关键修改 1：将 onToggle 传递给 Nav 组件 */}
-            <Nav isCollapsed={isCollapsed} onToggle={() => setIsCollapsed(!isCollapsed)} />
+            <Nav
+                isCollapsed={isCollapsed}
+                onToggle={() => setIsCollapsed(!isCollapsed)}
+                isMobileOpen={isMobileOpen}
+                onMobileClose={() => setIsMobileOpen(false)}
+                onMobileOpen={() => setIsMobileOpen(true)}
+            />
 
-            {/* 右侧内容区 */}
             <div className="relative z-10 w-full flex-1 flex flex-col h-screen overflow-y-auto">
-                {/* 💡 关键修改 2：删除了原本在 Layout 里的 <button>，由 Nav 内部统筹渲染折叠按钮 */}
-                <main className="flex-1 max-w-5xl mx-auto w-full py-6 px-6 sm:px-12 flex justify-between items-center items-center">
+                <main className="flex-1 max-w-5xl mx-auto w-full py-6 px-6 sm:px-12">
                     <Outlet />
                 </main>
                 <Footer />
